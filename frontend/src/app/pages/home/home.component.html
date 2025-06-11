@@ -1,0 +1,728 @@
+<!-- Mostrar spinner mientras carga autenticación O mientras cargan Fiador -->
+<div *ngIf="isLoggedIn === null || isLoadingFiador" class="loading-container">
+  <ion-spinner class="center-spinner"></ion-spinner>
+  <br><br>
+  <h1 class="loading-text text-black dark:text-white">{{ "Cargando Fiador" | translate }}</h1>
+</div>
+
+<ion-content *ngIf="isLoggedIn !== null && !isLoadingFiador">
+
+  <header *ngIf="isLoggedIn && !isMobile">
+    <br>
+    <div class="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
+
+      <div class="flex items-center justify-between w-full">
+
+        <!--La propiedad fill-clear hace que color por defecto que trae Ionic-->
+        <button fill="clear" class="rounded-full bg-color-primary hover:bg-color-primary-100 
+          px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition "
+          (click)="ModalSettings($event)">
+          <ion-icon style="height: 30px; width: 30px;" name="settings-sharp"></ion-icon>
+        </button>
+
+        <a href="clients" class="rounded-md  bg-color-primary hover:bg-color-primary-100 
+          px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
+          {{ "Cliente" | translate }}
+        </a>
+
+
+        <a href="products" class="rounded-md  bg-color-primary hover:bg-color-primary-100 
+          px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
+          {{ "Producto" | translate }}
+        </a>
+
+        <button (click)="cerrarSesion()"
+          class="inline-block rounded-md bg-color-rojo  hover:bg-red-800 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-white transition">
+          {{ "Cerrar sesion" | translate }}
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <header *ngIf="isLoggedIn && isMobile">
+    <br><br><br>
+    <div class="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
+
+      <div class="flex items-center justify-between w-full">
+
+        <!--La propiedad fill-clear hace que color por defecto que trae Ionic-->
+        <button fill="clear" class="rounded-full bg-color-primary hover:bg-color-primary-100 
+          px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition "
+          (click)="ModalSettings($event)">
+          <ion-icon style="height: 30px; width: 30px;" name="settings-sharp"></ion-icon>
+        </button>
+
+        <a href="clients" class="rounded-md  bg-color-primary hover:bg-color-primary-100 
+          px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
+          {{ "Cliente" | translate }}
+        </a>
+
+
+        <a href="products" class="rounded-md  bg-color-primary hover:bg-color-primary-100 
+          px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
+          {{ "Producto" | translate }}
+        </a>
+
+        <button (click)="cerrarSesion()"
+          class="inline-block rounded-md bg-color-rojo  hover:bg-red-800 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-white transition">
+          {{ "Cerrar sesion" | translate }}
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="!isLoggedIn" class="min-h-screen flex items-center justify-center p-4">
+    <div class="flex flex-col md:grid md:grid-cols-2 gap-4 md:gap-8 xl:gap-20 md:items-center">
+
+      <div class="md:hidden relative order-first" *ngIf="isLoggedIn && isMobile">
+        <!--Este es el h1 del celular-->
+        <h1
+          class="text-center block text-2xl font-bold text-gray-950 sm:text-3xl lg:text-5xl lg:leading-tight dark:text-white">
+          {{ "Bienvenida" | translate }}
+          <span class="text-blue-800">{{ "Fiador" | translate }}</span>
+        </h1>
+      </div>
+
+      <div class="md:hidden relative order-first" *ngIf="isLoggedIn && !isMobile">
+        <br><br>
+        <!--Este es el h1 del celular-->
+        <h1
+          class="text-center block text-2xl font-bold text-gray-950 sm:text-3xl lg:text-5xl lg:leading-tight dark:text-white">
+          {{ "Bienvenida" | translate }}
+          <span class="text-blue-800">{{ "Fiador" | translate }}</span>
+        </h1>
+      </div>
+
+      <div class="relative ms-4 flex justify-center order-1 md:order-none">
+        <img class="w-60 lg:w-96" src="assets/logo.webp">
+      </div>
+
+      <div class="order-3 md:order-none">
+        <!-- Ocultar el h1 en móvil (ya lo mostramos arriba) -->
+        <h1
+          class="items-center hidden md:block text-center text-2xl font-bold text-gray-950 sm:text-3xl lg:text-5xl lg:leading-tight dark:text-white">
+          {{ "Bienvenida" | translate }}
+          <span class="text-blue-800">{{ "Fiador" | translate }}</span>
+        </h1>
+
+        <p class="text-justify mt-3 text-lg text-gray-950 dark:text-neutral-400">
+          {{ "Descripcion" | translate }}
+        </p>
+
+        <br>
+
+        <div class="max-w-sm mx-auto">
+          <ion-label class="block mb-2 text-lg font-medium text-gray-950 dark:text-gray-300">
+            {{ "Seleccionar idioma" | translate }}
+          </ion-label>
+          <ion-select id="idioma" [(ngModel)]="currentLang" (ionChange)="cambiarIdioma($event)" class="
+        bg-color-primary hover:bg-color-primary-100 
+         text-sm rounded-lg 
+         transition-all duration-200 
+         focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+         block w-full p-2.5 
+         dark:bg-gray-700 dark:hover:bg-gray-600 
+         dark:border-gray-600 dark:focus:ring-blue-500 
+         dark:focus:border-blue-500
+         cursor-pointer">
+            <ion-select-option *ngFor="let lang of langs" [value]="lang"
+              class="text-white hover:bg-gray-700 dark:hover:bg-gray-600">
+              {{ lang }}
+            </ion-select-option>
+          </ion-select>
+        </div>
+
+        <!-- Botones -->
+        <div class="justify-center mt-7 grid gap-3 w-full sm:inline-flex">
+          <ion-row class="ion-padding-botton">
+            <ion-col size="6">
+              <a href="register" class="py-3 px-4 inline-flex 
+              justify-center items-center gap-x-2 text-sm font-medium rounded-lg
+               bg-color-primary text-gray-950 shadow-2xs hover:bg-color-primary-100 
+               focus:outline-hidden focus:bg-color-primary-100 disabled:opacity-50 
+               disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700
+                dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
+                {{ "Registrate" | translate }}
+                <ion-icon style="width: 30px; height: 40px;" name="person-add-outline"></ion-icon>
+              </a>
+            </ion-col>
+            <ion-col size="6">
+              <a href="login"
+                class="py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                {{ "Iniciar sesion" | translate }}
+                <ion-icon style="width: 30px; height: 40px;" name="enter-outline"></ion-icon>
+              </a>
+            </ion-col>
+          </ion-row>
+        </div>
+        <br><br>
+      </div>
+    </div>
+  </div>
+
+
+  <div *ngIf="isLoggedIn" class="px-4 md:px-16 lg:px-32">
+
+    <br>
+    <div class="flex justify-end">
+      <button (click)="openModalFiadoProducto()" [disabled]="!isOnline || networkChecking"
+        [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+        class="rounded-md bg-color-azul hover:bg-color-azul-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition flex items-center justify-center"
+        [ngClass]="{
+    'opacity-50 cursor-not-allowed': !isOnline || networkChecking,
+    'hover:bg-color-azul-100': isOnline && !networkChecking
+  }">
+        {{ "Fiado" | translate }}
+      </button>
+    </div>
+
+    <br>
+    <!-- Agrega esto en tu home.component.html, preferiblemente al inicio de la sección de fiados -->
+    <!-- Barra de búsqueda -->
+    <ion-searchbar class="custom-searchbar" [(ngModel)]="busquedaFiado" (ionInput)="filtrarFiados()"
+      placeholder="{{ 'Buscar Fiados' | translate }}">
+    </ion-searchbar>
+
+    <br>
+
+    <!-- Lista de fiados (modificada para usar fiadosFiltrados) -->
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+      <li class="pb-3 sm:pb-4" *ngFor="let fiado of fiadosFiltrados">
+        <!-- Resto de tu código permanece igual -->
+        <div class="flex items-center space-x-4 rtl:space-x-reverse">
+          <div class="flex-1 min-w-0">
+            <p class="text-base lg:text-xl font-medium dark:text-white">
+              <span class="text-black dark:text-gray-500">{{ "Cliente" | translate }}: </span>
+              <span class="text-zinc-900 dark:text-gray-200 inline-flex items-center">
+                {{ fiado.cliente_nombre }}
+                <ion-button (click)="openVisualizarFiadoModal(fiado)" fill="clear" color="dark"
+                  class="ion-no-padding ml-1 w-auto h-auto p-0 m-0"
+                  style="--padding-start: 0; --padding-end: 0; --padding-top: 0; --padding-bottom: 0;">
+                  <ion-icon name="eye"
+                    class="text-black dark:text-gray-400 hover:text-blue-500 transition-colors duration-200"
+                    style="width: 30px; height: 40px;"></ion-icon>
+                </ion-button>
+              </span>
+            </p>
+            <p class="text-base lg:text-xl font-medium dark:text-white">
+              <span class="text-black dark:text-gray-500">{{ "Deuda" | translate }}: </span>
+              <span class="text-zinc-900 dark:text-gray-200">{{ fiado.deuda_total | currency }}</span>
+            </p>
+          </div>
+          <ion-button color="tertiary" expand="block" mode="md" (click)="openEditarModal(fiado)"
+            [disabled]="!isOnline || networkChecking" [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" type="submit">
+            {{"Actualizar" | translate }}
+          </ion-button>
+          <ion-button color="danger" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
+            [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEliminar(fiado)">
+            <p class="text-white">{{"Borrar" | translate }}</p>
+          </ion-button>
+        </div>
+      </li>
+
+      <!-- Mostrar mensaje si NO hay fiados filtrados -->
+      <div *ngIf="fiadosFiltrados.length === 0 && busquedaFiado" class="text-center py-4">
+        <h1 class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r bg-color-primary
+      dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
+          {{"No se encontraron fiados para" | translate}} "{{busquedaFiado}}"
+        </h1>
+      </div>
+
+      <!-- Mostrar mensaje si NO hay Fiador (original) -->
+      <div *ngIf="Fiador.length === 0 && !busquedaFiado" class="text-center py-4">
+        <h1 class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r bg-color-primary
+      dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
+          
+          {{ !isOnline ? ('ERROR_CONEXION_INTERNET_RECARGA' | translate) : ('Fiado no hay' | translate) }}
+        </h1>
+      </div>
+    </ul>
+    <br><br><br>
+
+    <!--Modal de agregar Fiador-->
+    <div *ngIf="showModalFiado" class="fixed inset-0 py-4 z-[100] 
+    bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+     dark:bg-[#12171f]
+       dark:bg-none flex justify-center items-center">
+      <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_fiado"
+        (ngSubmit)="registrar_fiado()">
+        <h1
+          class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd] dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
+          {{"Agregar Fiado" | translate}}
+        </h1>
+
+        <div class="input-formularios">
+          <!-- Selección de Cliente -->
+          <ng-container *ngIf="clientes.length > 0 && productos.length > 0">
+            <ion-item>
+              <ion-label position="stacked">{{ "Agregar Cliente" | translate }}</ion-label>
+              <ion-select formControlName="cliente" interface="popover"
+                placeholder="{{ 'Seleccione un cliente' | translate }}" (ionChange)="ClienteSeleccionado($event)"
+                class="text-black dark:text-white">
+                <ion-select-option *ngFor="let cliente of clientes" [value]="cliente.id">
+                  {{ cliente.cliente_nombre }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ng-container>
+
+          <ng-template #noClientesBlock>
+            <div class="ion-text-center w-full py-2">
+              <p class="text-black dark:text-gray-400">
+                {{ "No tienes clientes registrados, registra uno" | translate }}
+                <br>
+                <a class="text-blue-900 dark:text-blue-600" href="products">{{ "Aqui" | translate }}</a>
+              </p>
+            </div>
+          </ng-template>
+
+
+
+          <!-- Selección de Productos con Cantidades -->
+          <ion-item>
+            <div *ngIf="productos.length > 0">
+              <ion-label position="stacked">{{ "Producto" | translate }}</ion-label>
+              <ion-button expand="block" (click)="abrirModalProductos()">
+                {{ "Seleccionar productos" | translate }}
+              </ion-button>
+            </div>
+
+            <div *ngIf="productos.length === 0" class="ion-text-center w-full py-2">
+              <p class="text-black dark:text-gray-400">
+                {{ "No tienes productos registrados, registra uno" | translate }}
+                <br>
+                <a class="text-blue-900 dark:text-blue-600" href="products">{{ "Aqui" | translate }}</a>
+              </p>
+            </div>
+          </ion-item>
+
+          <br>
+
+          <!---Interes---->
+          <ion-item *ngIf="clientes.length > 0 && productos.length > 0">
+            <ion-label position="stacked">{{ "Comision" | translate }} (%) </ion-label>
+            <ion-input formControlName="interes" type="number" placeholder="0" (ionChange)="actualizarMontoTotal()">
+            </ion-input>
+          </ion-item>
+
+
+          <!-- Lista de productos seleccionados con cantidades -->
+          <div class="productos-seleccionados">
+            <div *ngFor="let item of productosSeleccionados" class="producto-item">
+              <div class="producto-info">
+                <span class="text-black dark:text-white">{{"Producto" | translate}}: {{ item.producto.producto_nombre
+                  }}</span>
+                <br>
+                <span class="text-black dark:text-white">{{"Precio" | translate}}: {{ item.producto.precio | currency
+                  }}</span>
+              </div>
+              <div class="producto-cantidad">
+                <ion-button size="small" (click)="modificarCantidad(item, -1)">-</ion-button>
+                <span class="text-black dark:text-white">{{ item.cantidad }}</span>
+                <ion-button size="small" (click)="modificarCantidad(item, 1)">+</ion-button>
+                <ion-button size="small" color="danger" (click)="eliminarProducto(item)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="clientes.length > 0 && productos.length > 0">
+
+            <!-- Monto Total con desglose -->
+            <ion-item>
+              <ion-label>{{ "Subtotal" | translate }}</ion-label>
+              <ion-text slot="end" class="text-black dark:text-white">{{ calcularSubtotal() | currency }}</ion-text>
+            </ion-item>
+
+            <ion-item>
+              <ion-label>{{ "Comision" | translate }} ({{ formulario_fiado.get('interes')?.value || 0 }}%)</ion-label>
+              <ion-text slot="end" class="text-black dark:text-white">{{ calcularInteres() | currency }}</ion-text>
+            </ion-item>
+
+            <!-- Monto Total -->
+            <ion-item>
+              <ion-label><strong>{{ "Total" | translate }}</strong></ion-label>
+              <ion-text slot="end" class="text-black dark:text-white"><strong>{{ calcularMontoTotal() |
+                  currency}}</strong></ion-text>
+            </ion-item>
+          </div>
+
+
+        </div>
+
+        <!-- Botones -->
+        <ion-row class="ion-padding-bottom" *ngIf="clientes.length > 0 && productos.length > 0">
+          <ion-col size="6">
+            <ion-button [disabled]="!validarFormulario()" expand="block" class="gradient-btn" mode="ios" type="submit">
+              {{ "Registrar Fiado" | translate }}
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button (click)="closeModalFiado()" class="gradient-btn" color="medium" mode="ios" type="button">
+              {{ "Cancelar" | translate }}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row class="ion-padding-bottom" *ngIf="clientes.length === 0 && productos.length === 0">
+          <ion-col size="12">
+            <ion-button (click)="closeModalFiado()" class="gradient-btn" color="medium" mode="ios" type="button">
+              {{ "Cerrar" | translate }}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </form>
+    </div>
+
+    <!-- Modal para selección de productos -->
+    <ion-modal [isOpen]="modalProductosAbierto" (ionModalDidDismiss)="cerrarModalProductos()">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title class="text-black dark:text-white">{{ "Seleccionar productos" | translate }}</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="cerrarModalProductos()" class="text-black dark:text-white">
+                {{ "Cancelar" | translate}}
+              </ion-button>
+              <ion-button (click)="agregarAbonoModalProductos()" class="text-black dark:text-white">OK</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+          <ion-toolbar>
+            <ion-searchbar [(ngModel)]="busquedaProducto" placeholder="{{ 'Buscar producto' | translate }}"
+              debounce="300"></ion-searchbar>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <ion-list>
+            <ion-item *ngFor="let producto of productosFiltrados()">
+              <ion-label>
+                <h2>{{ producto.producto_nombre }}</h2>
+                <p>{{ producto.precio | currency }}</p>
+              </ion-label>
+              <ion-checkbox slot="end" [checked]="estaSeleccionado(producto)"
+                (ionChange)="toggleProductoSeleccionado(producto)">
+              </ion-checkbox>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Modal de editar productos -->
+    <div *ngIf="showModalEditar" class="fixed inset-0 py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
+      <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_fiado">
+        <h1 class="rounded-xl left-0 w-full py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#2d3748] dark:bg-none
+            transition-colors duration-300 text-black dark:text-white">
+          {{"Fiado editar" | translate}}
+        </h1>
+
+        <!-- Los mismos campos que en el modal de agregar -->
+        <div class="input-formularios">
+          <ion-label>
+            <span class="text-black dark:text-gray-500">{{ "Cliente" | translate }}: </span>
+            <span class="text-zinc-900 dark:text-gray-200">{{ Fiadoreleccionado?.cliente_nombre }}</span>
+          </ion-label>
+          <br><br>
+          <ion-label>
+            <span class="text-black dark:text-gray-500">{{ "Deuda" | translate }}: </span>
+            <span class="text-zinc-900 dark:text-gray-200">{{ Fiadoreleccionado?.deuda_total | currency }}</span>
+          </ion-label>
+        </div>
+
+        <ion-row class="ion-padding-bottom">
+          <ion-col size="12">
+            <ion-row>
+              <ion-col size="6">
+                <ion-button (click)="modalAbono()" class="gradient-btn" mode="ios" type="button">
+                  {{ "Pago" | translate }}
+                </ion-button>
+              </ion-col>
+              <ion-col size="6">
+                <ion-button (click)="openModalOtroFiado()" class="gradient-btn" mode="ios" type="button">
+                  {{ "Aumentar Fiado" | translate }}
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12">
+                <ion-button (click)="cerrarModalEditar()" class="gradient-btn" mode="ios" color="medium" type="button">
+                  {{ "Cancelar" | translate }}
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-col>
+        </ion-row>
+      </form>
+
+      <!-- Modal de input para monto -->
+      <div *ngIf="mostrarInputPago"
+        class="fixed inset-0 z-[200] bg-black bg-opacity-50 flex justify-center items-center">
+        <div class="
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#12171f] dark:bg-none justify-center items-center rounded-lg w-80">
+          <br>
+          <h2 class="text-lg font-bold mb-4 dark:text-white text-center">
+            {{ "Ingrese monto del abono" | translate }}
+          </h2>
+          <div class="input-formularios">
+
+            <ion-item>
+              <ion-input type="number" [(ngModel)]="montoPago" (ionInput)="validarMontoPago()"
+                placeholder="{{ 'Monto a pagar' | translate }}">
+              </ion-input>
+            </ion-item>
+
+            <div *ngIf="errorMonto" class="text-red-500 text-sm mt-2">
+              {{ errorMonto | translate }}
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-4">
+            <ion-button (click)="cancelarPago()" color="medium" mode="ios">
+              {{ "Cancelar" | translate }}
+            </ion-button>
+            <ion-button (click)="agregarAbono()" mode="ios" [disabled]="!montoPagoValido">
+              {{ "Confirmar" | translate }}
+            </ion-button>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+
+    <!-- Modal de visualizar Fiador -->
+    <div *ngIf="showVisualizarFiadoModal" class="fixed inset-0 py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
+      <div class="formularios w-full max-h-[90vh] overflow-y-auto">
+        <h1 class="rounded-xl left-0 w-full py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#2d3748] dark:bg-none
+            transition-colors duration-300 text-black dark:text-white">
+          {{"Fiado Datos" | translate}}
+        </h1>
+
+        <div class="input-formularios">
+          <ion-label>
+            <span class="text-black dark:text-gray-500">{{ "Cliente" | translate }}: </span>
+            <span class="text-zinc-900 dark:text-gray-200">{{ Fiadoreleccionado?.cliente_nombre }}</span>
+          </ion-label>
+
+          <br><br>
+          <ul *ngIf="Fiadoreleccionado">
+            <li *ngFor="let deuda of Fiadoreleccionado.deuda_pendiente">
+              <ion-label>
+                <span class="text-black dark:text-gray-500">{{ "Producto" | translate }}: </span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ deuda.producto_nombre }}</span>
+              </ion-label>
+              <br>
+              <ion-label>
+                <span class="text-black dark:text-gray-500">{{ "Precio" | translate }}: </span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ deuda.precio | currency }}</span>
+              </ion-label>
+              <br>
+              <ion-label>
+                <span class="text-black dark:text-gray-500">{{ "Cantidad" | translate }}: </span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ deuda.cantidad }}</span>
+              </ion-label>
+              <br>
+              <ion-label>
+                <span class="text-black dark:text-gray-500">{{ "Subtotal" | translate }}: </span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ (deuda.precio * deuda.cantidad) | currency }}</span>
+              </ion-label>
+              <br><br>
+            </li>
+          </ul>
+
+          <ion-label>
+            <span class="text-black dark:text-gray-500">{{ "Comision" | translate }}: </span>
+            <span class="text-zinc-900 dark:text-gray-200">{{ Fiadoreleccionado?.interes }}%</span>
+          </ion-label>
+          <br>
+          <ion-label>
+            <span class="text-black dark:text-gray-500">{{ "Abono" | translate }}: </span>
+            <span class="text-zinc-900 dark:text-gray-200">{{ Fiadoreleccionado?.abono | currency }}</span>
+          </ion-label>
+          <br>
+          <ion-label>
+            <span class="text-black dark:text-gray-500">{{ "Deuda" | translate }}: </span>
+            <span class="text-zinc-900 dark:text-gray-200">{{ Fiadoreleccionado?.deuda_total | currency }}</span>
+          </ion-label>
+        </div>
+
+        <ion-row class="ion-padding-bottom">
+          <ion-col size="12">
+            <ion-row>
+              <ion-col size="12">
+                <ion-button (click)="cerrarVisualizarFiadoModal()" class="gradient-btn" mode="ios" color="medium"
+                  type="button">
+                  {{ "Cerrar" | translate }}
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-col>
+        </ion-row>
+      </div>
+    </div>
+
+
+    <!--Modal de agregar Fiador-->
+    <div *ngIf="showModalOtroFiado" class="fixed inset-0 py-4 z-[100] 
+    bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+     dark:bg-[#12171f]
+       dark:bg-none flex justify-center items-center">
+      <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_fiado"
+        (ngSubmit)="registrar_fiado()">
+        <h1
+          class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd] dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
+          {{"Nuevo Fiado" | translate}}
+        </h1>
+
+        <div class="input-formularios">
+
+          <!-- Selección de Productos con Cantidades -->
+          <ion-item>
+            <div *ngIf="productos.length > 0">
+              <ion-label position="stacked">{{ "Producto" | translate }}</ion-label>
+              <ion-button expand="block" (click)="abrirModalProductos()">
+                {{ "Seleccionar productos" | translate }}
+              </ion-button>
+            </div>
+
+            <div *ngIf="productos.length === 0" class="ion-text-center w-full py-2">
+              <p class="text-black dark:text-gray-400">
+                {{ "No tienes productos registrados, registra uno" | translate }}
+                <br>
+                <a class="text-blue-900 dark:text-blue-600" href="products">{{ "Aqui" | translate }}</a>
+              </p>
+            </div>
+          </ion-item>
+
+          <br>
+
+          <!---Interes---->
+          <ion-item *ngIf="clientes.length > 0 && productos.length > 0">
+            <ion-label position="stacked">{{ "Comision" | translate }} (%) </ion-label>
+            <ion-input formControlName="interes" type="number" placeholder="0" (ionChange)="actualizarMontoTotal()">
+            </ion-input>
+          </ion-item>
+
+
+          <!-- Lista de productos seleccionados con cantidades -->
+          <div class="productos-seleccionados">
+            <div *ngFor="let item of productosSeleccionados" class="producto-item">
+              <div class="producto-info">
+                <span class="text-black dark:text-white">{{"Producto" | translate}}: {{ item.producto.producto_nombre
+                  }}</span>
+                <br>
+                <span class="text-black dark:text-white">{{"Precio" | translate}}: {{ item.producto.precio | currency
+                  }}</span>
+              </div>
+              <div class="producto-cantidad">
+                <ion-button size="small" (click)="modificarCantidad(item, -1)">-</ion-button>
+                <span class="text-black dark:text-white">{{ item.cantidad }}</span>
+                <ion-button size="small" (click)="modificarCantidad(item, 1)">+</ion-button>
+                <ion-button size="small" color="danger" (click)="eliminarProducto(item)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="clientes.length > 0 && productos.length > 0">
+
+            <!-- Monto Total con desglose -->
+            <ion-item>
+              <ion-label>{{ "Subtotal" | translate }}</ion-label>
+              <ion-text slot="end" class="text-black dark:text-white">{{ calcularSubtotal() | currency }}</ion-text>
+            </ion-item>
+
+            <ion-item>
+              <ion-label>{{ "Comision" | translate }} ({{ formulario_fiado.get('interes')?.value || 0 }}%)</ion-label>
+              <ion-text slot="end" class="text-black dark:text-white">{{ calcularInteres() | currency }}</ion-text>
+            </ion-item>
+
+            <!-- Monto Total -->
+            <ion-item>
+              <ion-label><strong>{{ "Total" | translate }}</strong></ion-label>
+              <ion-text slot="end" class="text-black dark:text-white"><strong>{{ calcularMontoTotal() |
+                  currency}}</strong></ion-text>
+            </ion-item>
+          </div>
+
+
+        </div>
+
+        <!-- Botones -->
+        <ion-row class="ion-padding-bottom" *ngIf="clientes.length > 0 && productos.length > 0">
+          <ion-col size="6">
+            <ion-button [disabled]="!validarFormulario()" expand="block" class="gradient-btn" mode="ios" type="submit">
+              {{ "Registrar Fiado" | translate }}
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button (click)="closeModalOtroFiado()" class="gradient-btn" color="medium" mode="ios" type="button">
+              {{ "Cancelar" | translate }}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row class="ion-padding-bottom" *ngIf="clientes.length === 0 && productos.length === 0">
+          <ion-col size="12">
+            <ion-button (click)="closeModalOtroFiado()" class="gradient-btn" color="medium" mode="ios" type="button">
+              {{ "Cerrar" | translate }}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </form>
+    </div>
+
+
+    <!-- Modal de confirmación para eliminar -->
+    <div *ngIf="showDeleteModal" class="fixed inset-0 py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
+      <div class="formularios w-full max-h-[90vh] overflow-y-auto">
+        <h1 class="rounded-xl left-0 w-full py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#2d3748] dark:bg-none
+            transition-colors duration-300 text-black dark:text-white">
+          {{"Fiado eliminar" | translate}}
+        </h1>
+
+        <p class="text-center py-4 text-black dark:text-white">
+          {{ "Fiado Alerta eliminar" | translate }}
+        </p>
+
+        <ion-row class="ion-padding-bottom">
+          <ion-col size="12">
+            <ion-row>
+              <ion-col size="6">
+                <ion-button (click)="eliminarFiado()" color="danger" class="gradient-btn" mode="ios" type="button">
+                  {{ "Borrar" | translate }}
+                </ion-button>
+              </ion-col>
+              <ion-col size="6">
+                <ion-button (click)="cerrarModalEliminar()" class="gradient-btn" mode="ios" color="medium"
+                  type="button">
+                  {{ "Cancelar" | translate }}
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-col>
+        </ion-row>
+      </div>
+    </div>
+
+
+  </div>
+
+
+</ion-content>

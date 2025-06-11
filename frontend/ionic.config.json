@@ -1,0 +1,7 @@
+{
+  "name": "Fiador App",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

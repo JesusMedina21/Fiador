@@ -1,0 +1,32 @@
+.profile-view {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  
+    .profile-header {
+      margin-bottom: 30px;
+      
+      ion-avatar {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 15px;
+      }
+  
+      h2 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0;
+      }
+    }
+  
+    .profile-actions {
+      ion-button {
+        margin-bottom: 15px;
+      }
+  
+      .use-another-account {
+        color: var(--ion-color-primary);
+        text-transform: none;
+      }
+    }
+  }

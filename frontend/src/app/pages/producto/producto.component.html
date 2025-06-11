@@ -1,0 +1,316 @@
+<div *ngIf="isLoggedIn === null" class="loading-container">
+  <ion-spinner class="center-spinner"></ion-spinner>
+  <br><br>
+  <h1 class="loading-text text-black dark:text-white">{{ "Cargando Producto" | translate }}</h1>
+</div>
+
+<ion-content *ngIf="isLoggedIn !== null" [scrollY]="true">
+
+  <header class="relative py-4">
+    <div class="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
+      <div class="flex items-center justify-between" *ngIf="isLoggedIn && !isMobile">
+        <!-- Botón de regresar (izquierda) -->
+        <a href=""
+          class="flex items-center justify-center w-12 h-12 rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+          <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+        </a>
+
+        <!-- Contenedor para los botones Cliente y Cerrar sesión -->
+        <div class="flex items-center space-x-4">
+          <!-- Botón Cliente -->
+          <a href="clients"
+            class="rounded-md bg-color-primary hover:bg-color-primary-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
+            {{ "Cliente" | translate }}
+          </a>
+
+        </div>
+        <!-- Botón Cerrar sesión -->
+        <button (click)="cerrarSesion()"
+          class="rounded-md bg-color-rojo hover:bg-red-800 px-3 py-2 text-xs sm:py-2.5 sm:text-sm text-white transition">
+          {{ "Cerrar sesion" | translate }}
+        </button>
+      </div>
+      <div class="flex items-center justify-between" *ngIf="isLoggedIn && isMobile">
+        <br><br>
+        <!-- Botón de regresar (izquierda) -->
+        <a href=""
+          class="flex items-center justify-center w-12 h-12 rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+          <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+        </a>
+
+        <!-- Contenedor para los botones Cliente y Cerrar sesión -->
+        <div class="flex items-center space-x-4">
+          <!-- Botón Cliente -->
+          <a href="clients"
+            class="rounded-md bg-color-primary hover:bg-color-primary-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
+            {{ "Cliente" | translate }}
+          </a>
+
+        </div>
+        <!-- Botón Cerrar sesión -->
+        <button (click)="cerrarSesion()"
+          class="rounded-md bg-color-rojo hover:bg-red-800 px-3 py-2 text-xs sm:py-2.5 sm:text-sm text-white transition">
+          {{ "Cerrar sesion" | translate }}
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="px-4 md:px-16 lg:px-32">
+
+    <br>
+    <div class="flex justify-end">
+      <button (click)="openModal()" [disabled]="!isOnline || networkChecking"
+        [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+        class="rounded-md bg-color-azul hover:bg-color-azul-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition flex items-center justify-center"
+        [ngClass]="{
+    'opacity-50 cursor-not-allowed': !isOnline || networkChecking,
+    'hover:bg-color-azul-100': isOnline && !networkChecking
+  }">
+        {{ "Producto Agregar" | translate }}
+      </button>
+
+
+    </div>
+
+    <br>
+
+    <!-- Barra de búsqueda -->
+    <ion-searchbar class="custom-searchbar" [(ngModel)]="busquedaProducto" (ionInput)="filtrarProductos()"
+      placeholder="{{ 'Buscar Productos' | translate }}">
+    </ion-searchbar>
+
+    <br>
+
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+      <!-- Mostrar lista de productos si existen -->
+      <li *ngFor="let producto of productosFiltrados" class="pb-3 sm:pb-4">
+        <div class="flex items-center space-x-4 rtl:space-x-reverse">
+          <div class="flex-1 min-w-0">
+            <p class="text-base lg:text-xl font-medium dark:text-white">
+              <span class="text-black dark:text-gray-500">{{ "Producto" | translate }}: </span>
+              <span class="text-zinc-900 dark:text-gray-200">{{ producto.producto_nombre }}</span>
+            </p>
+
+            <p class="text-sm lg:text-lg text-zinc-900 dark:text-gray-400">
+              <span class="text-black dark:text-gray-500"> {{"Precio" | translate }}: </span>
+              <span class="text-zinc-900 dark:text-gray-200">{{ producto.precio | currency }} </span>
+            </p>
+          </div>
+          <ion-button color="tertiary" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
+            [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEditar(producto)">
+            {{"Editar" | translate }}
+          </ion-button>
+          <ion-button color="danger" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
+            [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEliminar(producto)">
+            <p class="text-white">{{"Borrar" | translate }}</p>
+          </ion-button>
+        </div>
+      </li>
+
+      <!-- Mostrar mensaje si NO hay productos -->
+      <div *ngIf="productos.length === 0" class="text-center py-4">
+        <h1 class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r bg-color-primary
+          dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
+     
+          {{ !isOnline ? ('ERROR_CONEXION_INTERNET_RECARGA' | translate) : ('Producto no hay' | translate) }}
+        </h1>
+      </div>
+    </ul>
+
+  </div>
+
+
+
+  <!--Modal de agregar productos-->
+  <div *ngIf="showModal" class="fixed inset-0  py-4 z-[100]
+              bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+              dark:bg-[#12171f] dark:bg-none flex justify-center items-center
+              ">
+    <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_producto"
+      (ngSubmit)="registrar_producto()" (keypress.enter)="registrar_producto()">
+      <!--El keypress es para que cuando el usuario presione la tecla enter registre el producto-->
+      <!--Campo usuario-->
+
+
+      <h1 class="rounded-xl left-0 w-full py-4 z-[100]
+              bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+              dark:bg-[#2d3748] dark:bg-none
+              transition-colors duration-300 text-black dark:text-white ">
+        {{"Producto Agregar" | translate}}
+      </h1>
+      <div class="input-formularios">
+        <ion-label>{{ "Producto" | translate }}</ion-label>
+        <!--input-->
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="producto_nombre" type="text"
+            placeholder="{{ 'Producto placeholder' | translate }}">
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para el usuario -->
+        <ion-text color="danger"
+          *ngIf="formulario_producto.get('producto_nombre')?.touched && formulario_producto.get('producto_nombre')?.invalid">
+          <p *ngIf="formulario_producto.get('producto_nombre')?.errors?.['required']">
+            {{ "Producto obligatorio" | translate }}
+          </p>
+          <p *ngIf="formulario_producto.get('producto_nombre')?.errors?.['minlength']">
+            {{ "Producto invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <div class="input-formularios">
+        <ion-label>{{ "Precio" | translate }}</ion-label>
+        <!--input-->
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="precio" type="text" inputmode="decimal"
+            placeholder="{{ 'Precio placeholder' | translate }}" (ionInput)="cleanPriceInput($event)"></ion-input>
+        </div>
+        <!-- Mensajes de error para Email -->
+        <ion-text color="danger"
+          *ngIf="formulario_producto.get('precio')?.touched && formulario_producto.get('precio')?.invalid">
+          <p *ngIf="formulario_producto.get('precio')?.errors?.['required']">
+            {{ "Precio obligatorio" | translate }}
+          </p>
+          <p
+            *ngIf="formulario_producto.get('precio')?.errors?.['min'] || formulario_producto.get('precio')?.errors?.['zeroNotAllowed']">
+            {{ "Precio invalido" | translate }}
+          </p>
+          <p *ngIf="formulario_producto.get('precio')?.errors?.['invalidFormat']">
+            {{ "Precio formato" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <ion-row class="ion-padding-bottom">
+        <ion-col size="12">
+          <ion-row>
+            <ion-col size="6">
+              <ion-button [disabled]="formulario_producto.invalid" class="gradient-btn" mode="ios" type="submit">
+                {{ "Producto Registrar" | translate }}
+                <ion-icon slot="end" name="log-in-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button (click)="closeModal()" class="gradient-btn" mode="ios" color="medium" type="submit">
+                {{ "Cancelar" | translate }}
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+
+    </form>
+  </div>
+  <!-- Modal de editar productos -->
+  <div *ngIf="showEditModal" class="fixed inset-0 py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
+    <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_producto"
+      (ngSubmit)="editarProducto()">
+      <h1 class="rounded-xl left-0 w-full py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#2d3748] dark:bg-none
+            transition-colors duration-300 text-black dark:text-white">
+        {{"Producto editar" | translate}}
+      </h1>
+
+      <!-- Los mismos campos que en el modal de agregar -->
+      <div class="input-formularios">
+        <ion-label>{{ "Producto" | translate }}</ion-label>
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="producto_nombre" type="text"
+            placeholder="{{ 'Producto placeholder' | translate }}">
+          </ion-input>
+        </div>
+        <ion-text color="danger"
+          *ngIf="formulario_producto.get('producto_nombre')?.touched && formulario_producto.get('producto_nombre')?.invalid">
+          <p *ngIf="formulario_producto.get('producto_nombre')?.errors?.['required']">
+            {{ "Producto obligatorio" | translate }}
+          </p>
+          <p *ngIf="formulario_producto.get('producto_nombre')?.errors?.['minlength']">
+            {{ "Producto invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <div class="input-formularios">
+        <ion-label>{{ "Precio del producto" | translate }}</ion-label>
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="precio" type="text" inputmode="decimal"
+            placeholder="{{ 'Precio placeholder' | translate }}" (ionInput)="cleanPriceInput($event)"></ion-input>
+        </div>
+        <ion-text color="danger"
+          *ngIf="formulario_producto.get('precio')?.touched && formulario_producto.get('precio')?.invalid">
+          <p *ngIf="formulario_producto.get('precio')?.errors?.['required']">
+            {{ "Precio obligatorio" | translate }}
+          </p>
+          <p
+            *ngIf="formulario_producto.get('precio')?.errors?.['min'] || formulario_producto.get('precio')?.errors?.['zeroNotAllowed']">
+            {{ "Precio invalido" | translate }}
+          </p>
+          <p *ngIf="formulario_producto.get('precio')?.errors?.['invalidFormat']">
+            {{ "Precio formato" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <ion-row class="ion-padding-bottom">
+        <ion-col size="12">
+          <ion-row>
+            <ion-col size="6">
+              <ion-button [disabled]="formulario_producto.invalid" class="gradient-btn" mode="ios" type="submit">
+                {{ "Producto editar" | translate }}
+              </ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button (click)="cerrarModalEditar()" class="gradient-btn" mode="ios" color="medium" type="button">
+                {{ "Cancelar" | translate }}
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+    </form>
+  </div>
+
+  <!-- Modal de confirmación para eliminar -->
+  <div *ngIf="showDeleteModal" class="fixed inset-0 py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
+    <div class="formularios w-full max-h-[90vh] overflow-y-auto">
+      <h1 class="rounded-xl left-0 w-full py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#2d3748] dark:bg-none
+            transition-colors duration-300 text-black dark:text-white">
+        {{"Producto eliminar" | translate}}
+      </h1>
+
+      <p class="text-center py-4 text-black dark:text-white">
+        {{ "Producto Alerta eliminar" | translate }} "{{ productoSeleccionado?.producto_nombre
+        }}"?
+      </p>
+
+      <ion-row class="ion-padding-bottom">
+        <ion-col size="12">
+          <ion-row>
+            <ion-col size="6">
+              <ion-button (click)="eliminarProducto()" color="danger" class="gradient-btn" mode="ios" type="button">
+                {{ "Borrar" | translate }}
+              </ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button (click)="cerrarModalEliminar()" class="gradient-btn" mode="ios" color="medium" type="button">
+                {{ "Cancelar" | translate }}
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+    </div>
+  </div>
+
+  <br><br>
+</ion-content>

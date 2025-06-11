@@ -1,0 +1,67 @@
+// For information on how to create your own theme, please see:
+// http://ionicframework.com/docs/theming/
+:root {
+    --ion-color-primary: #2c497e;
+    --ion-color-primary-rgb: 0, 0, 0;
+    --ion-color-primary-contrast: black;
+    --ion-color-primary-contrast-rgb: 255, 255, 255;
+    --ion-color-primary-shade: #036092;
+    --ion-color-primary-tint: #315eb1;
+
+    --ion-color-secondary: #0e1d3a;
+    --ion-color-secondary-rgb: 0, 0, 0;
+    --ion-color-secondary-contrast: black;
+    --ion-color-secondary-contrast-rgb: 255, 255, 255;
+    --ion-color-secondary-shade: #15b391;
+    --ion-color-secondary-tint: #50f3cf;
+
+    --ion-color-tertiary: #ec701d ;
+    --ion-color-tertiary-rgb: 0, 0, 0;
+    --ion-color-tertiary-contrast: black;
+    --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+    --ion-color-tertiary-shade: #036092;
+    --ion-color-tertiary-tint: #7088b8;
+
+    --ion-color-danger: #dc2626;
+    --ion-color-danger-rgb: 0, 0, 0;
+    --ion-color-danger-contrast: black;
+    --ion-color-danger-contrast-rgb: 255, 255, 255;
+    --ion-color-danger-shade: #036092;
+    --ion-color-danger-tint: #7088b8;
+}
+
+
+.loading-container {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  text-align: center;
+}
+
+.loading-text {
+  margin-top: 70px;
+  font-size: 1.2rem;
+}
+
+.center-spinner {
+  width: 40px;
+  height: 40px;
+}
+
+
+/* Estilo personalizado para el searchbar */
+ion-searchbar.custom-searchbar {
+  --background: #f5f5f5; /* Color de fondo */
+  --color: #333; /* Color del texto */
+  --placeholder-color: #666; /* Color del placeholder */
+  --icon-color: #444; /* Color del icono */
+  --border-radius: 20px; /* Bordes redondeados */
+  --box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Sombra opcional */
+}
+

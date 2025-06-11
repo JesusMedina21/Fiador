@@ -1,0 +1,137 @@
+<ion-content [scrollY]="true">
+
+    <ion-col size="6">
+        <a href="" class="absolute top-24 left-5 z-[1] flex items-center justify-center w-12 h-12 
+          rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+          <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+        </a>
+    </ion-col>
+
+ 
+    <div class="min-h-screen flex flex-col justify-center items-center">
+
+        <form class="formularios" [formGroup]="formulario_registro" (ngSubmit)="registrar()"
+            (keypress.enter)="registrar()">
+            <!--El keypress es para que cuando el usuario presione la tecla enter inicie sesion-->
+
+            <div class="flex justify-center">
+                <img width="120px" src="assets/logo.webp" alt="">
+            </div>
+
+            <!--Campo usuario-->
+            <div class="input-formularios">
+                <ion-label>{{ "Usuario" | translate }}</ion-label>
+                <!--input-->
+                <div class="input">
+                    <ion-input class="focus:outline-none focus:ring-0" formControlName="username" type="text"
+                        placeholder="{{ 'Placeholder Usuario' | translate }}">
+                    </ion-input>
+                </div>
+                <!-- Mensajes de error para el usuario -->
+                <ion-text color="danger"
+                    *ngIf="formulario_registro.get('username')?.touched && formulario_registro.get('username')?.invalid">
+                    <p *ngIf="formulario_registro.get('username')?.errors?.['required']">
+                        {{ "Usuario obligatorio" | translate }}
+                    </p>
+                    <p *ngIf="formulario_registro.get('username')?.errors?.['minlength']">
+                        {{ "Usuario invalido" | translate }}
+                    </p>
+                </ion-text>
+            </div>
+
+            <div class="input-formularios">
+                <ion-label>{{ "Correo" | translate }}</ion-label>
+                <!--input-->
+                <div class="input">
+                    <ion-input class="focus:outline-none focus:ring-0" formControlName="email" type="email"
+                        autocomplete="email" placeholder="{{ 'Placeholder Correo' | translate }}">
+                    </ion-input>
+                </div>
+                <!-- Mensajes de error para Email -->
+                <ion-text color="danger"
+                    *ngIf="formulario_registro.get('email')?.touched && formulario_registro.get('email')?.invalid">
+                    <p *ngIf="formulario_registro.get('email')?.errors?.['required']">
+                        {{ "Correo obligatorio" | translate }}
+                    </p>
+                    <p *ngIf="formulario_registro.get('email')?.errors?.['email']">
+                        {{ "Correo invalido" | translate }}
+                    </p>
+                </ion-text>
+            </div>
+            <div class="input-formularios">
+                <ion-label>{{ "Contraseña" | translate }}</ion-label>
+                <!-- input -->
+                <div class="input">
+                    <ion-input formControlName="password" type="password"
+                        placeholder="{{ 'Placeholder Contraseña' | translate }}">
+                        <ion-input-password-toggle color="dark" slot="end"></ion-input-password-toggle>
+                    </ion-input>
+                </div>
+                <!-- Mensajes de error para Contraseña -->
+                <ion-text color="danger"
+                    *ngIf="formulario_registro.get('password')?.touched && formulario_registro.get('password')?.invalid">
+                    <p *ngIf="formulario_registro.get('password')?.errors?.['required']">
+                        {{ "Contraseña obligatoria" | translate }}
+                    </p>
+                    <p *ngIf="formulario_registro.get('password')?.errors?.['minlength']">
+                        {{ "Contraseña invalida" | translate }}
+                    </p>
+                </ion-text>
+            </div>
+
+            <!---Confirmar contraseña-->
+            <div class="input-formularios">
+                <ion-label>{{ "Confirmar Contraseña" | translate }}</ion-label>
+                <div class="input">
+                    <ion-input formControlName="confirm_password" type="password"
+                        placeholder="{{ 'Placeholder Confirmar Contraseña' | translate }}">
+                        <ion-input-password-toggle color="dark" slot="end"></ion-input-password-toggle>
+                    </ion-input>
+                </div>
+                <ion-text color="danger"
+                    *ngIf="formulario_registro.get('confirm_password')?.touched && formulario_registro.get('confirm_password')?.invalid">
+                    <p *ngIf="formulario_registro.get('confirm_password')?.errors?.['required']">
+                        {{ "Confirmar Contraseña obligatoria" | translate }}
+                    </p>
+                </ion-text>
+                <ion-text color="danger"
+                    *ngIf="formulario_registro.errors?.['contraseñasCoinciden'] && formulario_registro.touched">
+                    <p>{{ "Confirmar Contraseña invalida" | translate }}</p>
+                </ion-text>
+            </div>
+
+            <!--
+        <div class="flex justify-end">
+          <a href="forgot-password" class="bg-green">{{ "Olvido contraseña" | translate }}</a>
+        </div> 
+        -->
+
+            <ion-row class="ion-padding-botton">
+
+                <!--Web-->
+                <ion-col size="12">
+                    <!--Logeo-->
+                    <ion-button [disabled]="formulario_registro.invalid" expand="block" class="gradient-btn" mode="ios"
+                        type="submit">
+                        {{ "Registrarse" | translate }}
+                        <ion-icon slot="end" name="log-in-outline"></ion-icon>
+                    </ion-button>
+                </ion-col>
+
+            </ion-row>
+
+            <a class="text-black dark:text-white" href="login">{{ "Con_cuenta" | translate }}
+                <strong class="hover:text-lg transition-all duration-200"> 
+                        {{ "Inicia sesion" | translate }}
+                </strong>
+            </a>
+
+        </form>
+
+
+
+    </div>
+
+    <br><br><br>
+
+</ion-content>

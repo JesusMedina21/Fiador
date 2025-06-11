@@ -1,0 +1,295 @@
+@use 'tailwindcss/base' as *;
+@use 'tailwindcss/components' as *;
+@use 'tailwindcss/utilities' as *;
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+// @import "@ionic/angular/css/palettes/dark.always.css"; 
+// @import "@ionic/angular/css/palettes/dark.class.css"; */
+// @import "@ionic/angular/css/palettes/dark.system.css";
+
+
+//Codigo modificado por mi 
+
+// Asegura que el ion-content tenga un comportamiento responsive con el teclado
+ion-content {
+  --keyboard-offset: 0px !important; // Fuerza a ignorar el offset automático (a veces causa problemas)
+  --overflow: auto;
+  overflow: auto;
+  height: 100vh; // Usa viewport height
+  contain: none; // Permite que el contenido se desplace libremente
+}
+
+/* Estilo para el alert de acceso biométrico */
+.biometric-alert {
+  --backdrop-opacity: 0.7;
+
+  .alert-wrapper {
+    background: #42609c;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+
+    .alert-head {
+      background: transparent;
+
+      .alert-title {
+        color: white !important;
+        /* Texto blanco para el título */
+        font-weight: bold;
+      }
+    }
+
+    .alert-message {
+      color: white !important;
+      /* Texto blanco para el mensaje */
+      padding-top: 10px;
+    }
+
+    .alert-button-group {
+      button {
+        color: white !important;
+
+        &:first-child {
+          border-right: 1px solid rgba(255, 255, 255, 0.3);
+        }
+      }
+    }
+  }
+}
+
+.dark .biometric-alert .alert-wrapper {
+  background: linear-gradient(135deg, #12171f, #2d3b55) !important;
+}
+
+
+
+ion-app,
+ion-content {
+  height: 100%;
+  overflow-y: auto;
+}
+
+// Modo Claro
+ion-content,
+ion-toolbar {
+  --background:  #5875ad;
+  /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+}
+
+// Modo Oscuro Sobreescrito con Tailwind cuando sea necesario
+.dark {
+
+  ion-content,
+  ion-toolbar {
+    --background: #161c25; // Equivalente a bg-gray-800
+  }
+}
+
+ion-item {
+  --background: transparent;
+}
+
+ion-button {
+  text-transform: none;
+}
+
+
+.d-flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.formularios {
+  width: 100%;
+  text-align: center;
+  padding: 20px;
+}
+
+
+.input-formularios {
+  text-align: start;
+  padding: 10px 0;
+
+  .input {
+    position: relative;
+    padding: 3px;
+    display: inline-block;
+    border-radius: 20px;
+    width: 100%;
+    height: 55px;
+    margin-top: 5px;
+  }
+
+  ion-input {
+    color: #000000; // Color del texto (rojo en este caso)
+    background: #5875ad;
+    border-radius: 17px;
+
+    border: 2px solid #2d3b55; // Borde permanente
+    box-sizing: border-box; // Para que no afecte el ancho total
+    --padding-start: 15px;
+    --highlight-height: 0;
+    // Eliminar el borde/outline por defecto
+    --border-width: 0;
+    --border-color: transparent;
+    --border-style: none;
+
+    // Modo oscuro
+    .dark & {
+      background: #2d3748;
+      border: 2px solid #000000; // Borde permanente
+      color: #fff;
+
+      &:focus {
+        outline-color: #ffff00; // Color diferente para modo oscuro (amarillo en este ejemplo)
+
+        outline: 2px solid #000000; // Cambia #00ff00 al color que prefieras (verde en este ejemplo)
+      }
+    }
+  }
+
+  ion-label {
+    padding: 10px;
+    color: #000000;
+
+    .dark & {
+      color: #fff; // Etiqueta blanca en modo oscuro
+    }
+  }
+
+  .input *:not(span) {
+    padding: 0 0.325em;
+  }
+
+
+}
+
+
+.gradient-btn {
+  margin-top: 35px;
+  --background: var(--ion-color-primary);
+  --background-activated: linear-gradient(21deg, var(--ion-color-secondary), var(--ion-color-primary));
+  --background-hover: #3a62ac;
+}
+.gradient-btn2 {
+  margin-top: 35px;
+  --background:   #1e57c0;
+  //--background-activated: linear-gradient(21deg, var(--ion-color-secondary), var(--ion-color-primary));
+  --background-hover:  #0f4dc0;
+}
+
+.alert-button-inner {
+  color: white;
+}
+
+@media (min-width: 769px) {
+  ion-content {
+
+    // Fuerza el redimensionamiento cuando el teclado aparece
+    &.keyboard-visible {
+      height: auto;
+      min-height: 100vh;
+    }
+  }
+
+  .formularios {
+    width: 500px;
+  }
+}
+
+/* Estilos para las opciones del select en modo claro y oscuro */
+ion-select-option {
+  --color: #c40606;
+  /* Texto negro en modo claro */
+}
+
+.dark ion-select-option {
+  --color: #cc1313 !important;
+  /* Texto blanco en modo oscuro */
+}
+
+/* Estilos específicos para el texto dentro de las opciones */
+ion-select-option::part(text) {
+  color: var(--color);
+}
+
+/* Estilo para el popover/alert */
+ion-alert.select-alert {
+  .alert-radio-label {
+    color: white !important;
+  }
+
+  [aria-checked=true] .alert-radio-label {
+    color: var(--ion-color-primary);
+  }
+
+  .alert-button {
+    color: white !important;
+  }
+}
+
+/* Fondo oscuro para el popover */
+ion-alert.select-alert .alert-wrapper {
+  background: #1e293b;
+  /* bg-slate-800 */
+}
+
+/* Estilo para las opciones */
+ion-alert.select-alert .alert-radio-group {
+  background: #1e293b;
+}
+
+
+.center-spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+/*Codigo para no mostrar el boton de inclementar en los input numericos*/
+
+::ng-deep ion-input input[type="number"]::-webkit-inner-spin-button,
+::ng-deep ion-input input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+::ng-deep ion-input input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

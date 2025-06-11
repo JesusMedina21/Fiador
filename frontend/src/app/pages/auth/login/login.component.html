@@ -1,0 +1,219 @@
+<ion-content [scrollY]="true">
+
+  <ion-col size="6">
+    <a href="" class="absolute top-24 left-5 z-[1] flex items-center justify-center w-12 h-12 
+          rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+      <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+    </a>
+  </ion-col>
+
+  <div class="min-h-screen flex flex-col justify-center items-center">
+
+
+    <!------------------------------------------FORMULARIO WEB---------------------------------------->
+    <form class="formularios" *ngIf="!isMobile" [formGroup]="formulario_login" (ngSubmit)="iniciar_sesion_web()"
+      (keypress.enter)="iniciar_sesion_web()">
+      <!--El keypress es para que cuando el usuario presione la tecla enter inicie sesion-->
+
+      <div class="flex justify-center">
+        <img width="120px" src="assets/logo.webp" alt="">
+      </div>
+
+      <div class="input-formularios">
+        <ion-label>{{ "Correo" | translate }}</ion-label>
+        <!--input-->
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="email" type="email" autocomplete="email"
+            placeholder="{{ 'Placeholder Correo' | translate }}">
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para Email -->
+        <ion-text color="danger"
+          *ngIf="formulario_login.get('email')?.touched && formulario_login.get('email')?.invalid">
+          <p *ngIf="formulario_login.get('email')?.errors?.['required']">
+            {{ "Correo obligatorio" | translate }}
+          </p>
+          <p *ngIf="formulario_login.get('email')?.errors?.['email']">
+            {{ "Correo invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+      <div class="input-formularios">
+        <ion-label>{{ "Contraseña" | translate }}</ion-label>
+        <!-- input -->
+        <div class="input">
+          <ion-input formControlName="password" type="password"
+            placeholder="{{ 'Placeholder Contraseña' | translate }}">
+            <ion-input-password-toggle color="dark" slot="end"></ion-input-password-toggle>
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para Contraseña -->
+        <ion-text color="danger"
+          *ngIf="formulario_login.get('password')?.touched && formulario_login.get('password')?.invalid">
+          <p *ngIf="formulario_login.get('password')?.errors?.['required']">
+            {{ "Contraseña obligatoria" | translate }}
+          </p>
+          <p *ngIf="formulario_login.get('password')?.errors?.['minlength']">
+            {{ "Contraseña invalida" | translate }}
+          </p>
+        </ion-text>
+      </div>
+      <!--
+      <div class="flex justify-end">
+        <a href="forgot-password" class="bg-green">{{ "Olvido contraseña" | translate }}</a>
+      </div> 
+      -->
+
+      <ion-row class="ion-padding-botton">
+
+        <!--Web-->
+        <ion-col size="12">
+          <!--Logeo-->
+          <ion-button [disabled]="formulario_login.invalid" expand="block" class="gradient-btn" mode="ios"
+            type="submit">
+            {{ "Iniciar sesion" | translate }}
+            <ion-icon slot="end" name="log-in-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+      </ion-row>
+
+      <a class="text-black dark:text-white" href="register">{{ "Sin_cuenta" | translate }}
+        <strong class="hover:text-lg transition-all duration-200">
+          {{ "Registrate" | translate }}
+        </strong>
+      </a>
+
+    </form>
+
+
+
+    <!------------------------------------------FORMULARIO MOVIL---------------------------------------->
+
+    <!--OJOOOOOOOOOOOOOOOOOOOOOOOOOO PELADOOOOOOOOOOOOOO TENGO QUE MODIFICAR EL 
+                             TS PARA VER LOS CAMBIOS DEL MOVIL EN EL NAVEGADOR-->
+
+
+    <!------------------------------------------FIN DE FORMULARIO MOVIL---------------------------------------->
+
+    <!-- Vista de perfil cuando el Usuario tiene guardada su huella -->
+    <div *ngIf="showProfileView" class="profile-view">
+      <div class="profile-header">
+
+        <div class="flex justify-center">
+          <img width="120px" src="assets/logo.webp" alt="">
+        </div>
+
+        <h2 class="text-black dark:text-white">{{ "Bienvenido" | translate }} {{ lastUsername }}!</h2>
+      </div>
+
+      <div class="profile-actions">
+        <!-- Botón para iniciar con huella -->
+        <ion-button (click)="loginWithBiometric()" expand="block" class="gradient-btn" mode="ios">
+          <ion-icon name="finger-print-outline" slot="start"></ion-icon>
+          {{ "Iniciar_sesion_huella" | translate }}
+        </ion-button>
+
+        <!-- Opción para usar otra cuenta -->
+        <ion-button (click)="UsarOtraCuenta()" expand="block" class="gradient-btn2" mode="ios">
+          {{ "Usar otra cuenta" | translate }}
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Vista de perfil cuando el Usuario no tiene guardada su huella -->
+
+    <form class="formularios" *ngIf="!showProfileView && isMobile" [formGroup]="formulario_login"
+      (ngSubmit)="iniciar_sesion_huella()" (keypress.enter)="iniciar_sesion_huella()">
+      <!--El keypress es para que cuando el usuario presione la tecla enter inicie sesion-->
+
+
+      <div class="flex justify-center">
+        <img width="120px" src="assets/logo.webp" alt="">
+      </div>
+
+      <div class="input-formularios">
+        <ion-label>{{ "Correo" | translate }}</ion-label>
+        <!--input-->
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="email" type="email" autocomplete="email"
+            placeholder="{{ 'Placeholder Correo' | translate }}">
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para Email -->
+        <ion-text color="danger"
+          *ngIf="formulario_login.get('email')?.touched && formulario_login.get('email')?.invalid">
+          <p *ngIf="formulario_login.get('email')?.errors?.['required']">
+            {{ "Correo obligatorio" | translate }}
+          </p>
+          <p *ngIf="formulario_login.get('email')?.errors?.['email']">
+            {{ "Correo invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+      <div class="input-formularios">
+        <ion-label>{{ "Contraseña" | translate }}</ion-label>
+        <!-- input -->
+        <div class="input">
+          <ion-input formControlName="password" type="password"
+            placeholder="{{ 'Placeholder Contraseña' | translate }}">
+            <ion-input-password-toggle color="dark" slot="end"></ion-input-password-toggle>
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para Contraseña -->
+        <ion-text color="danger"
+          *ngIf="formulario_login.get('password')?.touched && formulario_login.get('password')?.invalid">
+          <p *ngIf="formulario_login.get('password')?.errors?.['required']">
+            {{ "Contraseña obligatoria" | translate }}
+          </p>
+          <p *ngIf="formulario_login.get('password')?.errors?.['minlength']">
+            {{ "Contraseña invalida" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <!--
+      <div class="flex justify-end">
+        <a href="forgot-password" class="bg-green">{{ "Olvido contraseña" | translate }}</a>
+      </div>
+      -->
+
+      <ion-row class="ion-padding-botton">
+
+        <!--Este codigo lo que dice que el tamaño sea por defecto 12 sino existe obtenerDatosConHuella 
+      o si no existe el NoPreguntarHuella, si existe cualquiera de los 2 que el tamaño pase a ser 9-->
+        <ion-col [size]="(obtenerDatosConHuella () || NoPreguntarHuella()) ? '9': '12' ">
+          <!--Logeo-->
+          <ion-button [disabled]="formulario_login.invalid" expand="block" class="gradient-btn" mode="ios"
+            type="submit">
+            {{ "Iniciar sesion" | translate }}
+            <ion-icon slot="end" name="log-in-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+        <!--Este *ngIf lo que hace es que si existe obtenerDatosConHuella o si existe NoPreguntarHuella,
+      si existe cualquiera de los 2 que aparezca el codigo, 
+      si no existe cualquiera de las 2 opciones que no aparezca -->
+        <ion-col *ngIf="obtenerDatosConHuella()" size="3">
+          <!--Huella-->
+          <!--Aqui muestro este codigo cuando el usuario se registro y agrego la huella-->
+          <ion-button (click)="registrarHuella()" expand="block" class="gradient-btn ion-no-padding" mode="ios">
+            <ion-icon name="finger-print-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+        <ion-col *ngIf="NoPreguntarHuella()" size="3">
+          <!--Huella-->
+          <!--Aqui muestro este codigo cuando el usuario se registro y no agrego la huella y tiene la opcion de agregarla-->
+          <ion-button (click)="preguntarAgregarHuella()" expand="block" class="gradient-btn ion-no-padding" mode="ios">
+            <ion-icon name="finger-print-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+
+      <a class="text-black dark:text-white" href="register">{{ "Sin_cuenta" | translate }}<strong> {{ "Registrate" |
+          translate }}</strong></a>
+
+    </form>
+  </div>
+
+</ion-content>
