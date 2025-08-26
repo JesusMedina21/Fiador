@@ -5,6 +5,11 @@
 
  Esta plataforma te permite registrar todas las personas que te han comprado productos Fiador o a crédito. Te ayudamos a mantener tus cuentas claras con amigos, familiares y clientes. Lleva un registro amigable y organizado de quién te debe, facilitandote la administracion de tu dinero.
 
+El backend esta desplegado en Vercel en la siguiente url: https://apifiador.vercel.app/
+
+El frontend esta desplegado en Vercel en la siguiente url: https://fiador.vercel.app/
+
+
 ## Desarrollador por: Jesus Medina
 
  
