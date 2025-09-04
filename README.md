@@ -11,6 +11,6 @@ El frontend esta desplegado en Vercel en la siguiente url: https://fiador.vercel
 
 La aplicacion movil esta disponible en la siguiente url: https://drive.google.com/file/d/1i6tcdEx0xQpEueLH7qBCfeLgWKTIxR5f/view?usp=drive_link
 
-## Desarrollador por: Jesus Medina
+## Desarrollado por: Jesus Medina
 
  
