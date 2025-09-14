@@ -12,6 +12,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 
 import { Capacitor } from '@capacitor/core';
 import { NetworkService } from 'src/app/services/network.service';
+import { Network } from '@capacitor/network';
 
 @Component({
   selector: 'app-cliente',
@@ -38,7 +39,12 @@ export class ClienteComponent implements OnInit {
 
   isOnline: boolean = true;
 
+  isSubmitting: boolean = false;
+
   networkChecking: boolean = false;
+
+  private networkListener: any;
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -57,7 +63,12 @@ export class ClienteComponent implements OnInit {
   });
 
 
-  ngOnInit() {
+  async ngOnInit() {
+    // Verificación inicial de conexión
+    await this.checkNetworkStatus();
+
+    // Suscripción a cambios de estado de red
+    this.setupNetworkListeners();
     this.networkService.onlineStatus$.subscribe(async online => {
       this.isOnline = online;
 
@@ -71,6 +82,35 @@ export class ClienteComponent implements OnInit {
     this.cargarClientes();
   }
 
+  setupNetworkListeners() {
+    // Listener de Capacitor Network
+    this.networkListener = Network.addListener('networkStatusChange', async (status) => {
+      this.isOnline = status.connected;
+      if (this.isOnline) {
+        // Si hay conexión, recargar los fiados
+        location.reload(); // Recarga la página
+      }
+    });
+
+    // Listener adicional de tu servicio si es necesario
+    this.networkService.onlineStatus$.subscribe(online => {
+      this.isOnline = online;
+    });
+  }
+
+  //Codigo para que cuando de una app y vuelva a entrar los botones sigan habilitados
+  async checkNetworkStatus() {
+    this.networkChecking = true;
+    try {
+      const status = await Network.getStatus();
+      this.isOnline = status.connected;
+    } catch (error) {
+      console.error('Error checking network:', error);
+      this.isOnline = false;
+    } finally {
+      this.networkChecking = false;
+    }
+  }
   async checkAuthentication(): Promise<boolean> {
     // Primero verificar conexión a internet
     const hasConnection = await this.networkService.checkConnection();
@@ -97,10 +137,15 @@ export class ClienteComponent implements OnInit {
     });
   }
   async registrar_cliente() {
-    // Verifica conexión a internet primero
-    const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+    if (this.isSubmitting) return; // Evitar múltiples ejecuciones
+    this.isSubmitting = true; // Bloquear botón
 
+    const hasConnection = await this.networkService.checkConnection();
+
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
     if (!this.formulario_cliente.valid) {
       this.utilsSvc.presentToast({
         message: this.translateService.instant('Completar_Campos'),
@@ -141,6 +186,8 @@ export class ClienteComponent implements OnInit {
         icon: 'checkmark-circle-outline'
       });
 
+      await loading.dismiss(); // Siempre se cierra al final
+      this.isSubmitting = false;
       this.closeModal();
       await this.cargarClientes(); // Si cargarClientes es async
       this.router.navigateByUrl('/clients');
@@ -149,6 +196,8 @@ export class ClienteComponent implements OnInit {
       //console.error('Error:', error);
       const mensajeError = error?.error?.non_field_errors?.[0];
 
+      await loading.dismiss(); // Siempre se cierra al final
+      this.isSubmitting = false;
       if (mensajeError === 'The fields fiador, cliente_nombre must make a unique set.') {
         this.utilsSvc.presentToast({
           message: this.translateService.instant('Cliente error'),
@@ -168,6 +217,7 @@ export class ClienteComponent implements OnInit {
       }
     } finally {
       await loading.dismiss(); // Siempre se cierra al final
+      this.isSubmitting = false;
     }
   }
 
@@ -202,8 +252,17 @@ export class ClienteComponent implements OnInit {
     );
   }
   async editarCliente() {
+
+    if (this.isSubmitting) return; // Evitar múltiples ejecuciones
+    this.isSubmitting = true; // Bloquear botón
+
     const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
+
     if (this.formulario_cliente.valid && this.clienteSeleccionado) {
       const loading = await this.utilsSvc.loading({
         spinner: 'crescent',
@@ -240,6 +299,8 @@ export class ClienteComponent implements OnInit {
           error: (error) => {
             const mensajeError = error?.error?.non_field_errors?.[0];
 
+            loading.dismiss(); // Mover aquí
+            this.isSubmitting = false;
             if (mensajeError === 'The fields fiador, cliente_nombre must make a unique set.') {
               this.utilsSvc.presentToast({
                 message: this.translateService.instant('Cliente error'),
@@ -258,10 +319,12 @@ export class ClienteComponent implements OnInit {
               });
             }
             loading.dismiss();
+            this.isSubmitting = false;
           }
         });
       } catch (error) {
         loading.dismiss(); // Mover aquí
+        this.isSubmitting = false;
       }
     }
   }

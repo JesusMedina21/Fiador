@@ -25,6 +25,7 @@ from datetime import timedelta
 SECRET_KEY = 'django-insecure-k#-$+9gsvz#0%o3w0f7n!g&p1-ddza2u72fw&#-8t$=s!vm-a0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
 ALLOWED_HOSTS = []
 
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,19 +42,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
     'rest_framework',
+    'djoser',
+    'social_django',
     'rest_framework_simplejwt', 
-    'rest_framework.authtoken',
     'drf_spectacular', #django spectacular sirve como documentacion de swagger
     'corsheaders',
-    'pwa'
+    'pwa',
 
 ]
 
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Debe ir antes de cualquier middleware que maneje solicitudes
-    #'fiados.middleware.BlockPostmanMiddleware', #Ojo estos middleware se tienen que descomentar para produccion 
-    #'fiados.middleware.CustomHeaderMiddleware', #Ojo estos middleware se tienen que descomentar para produccion
+    'fiados.middleware.BlockPostmanMiddleware',
+    'fiados.middleware.CustomHeaderMiddleware',
+    'fiados.middleware.DisableAdminLogMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -76,10 +80,149 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect'
             ],
         },
     },
 ]
+
+
+JAZZMIN_SETTINGS = {
+    # title of the window (Will default to current_admin_site.site_title if absent or None)
+    "site_title": "Fiador",
+
+
+    # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
+    "site_brand": "Fiador",
+
+    
+
+    # Logo to use for your site, must be present in static files, used for brand on top left
+    "site_logo": "logo.png",
+
+    # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
+    "login_logo": None,
+
+    # Logo to use for login form in dark themes (defaults to login_logo)
+    "login_logo_dark": None,
+    # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
+    "login_logo": None,
+
+    # Logo to use for login form in dark themes (defaults to login_logo)
+    "login_logo_dark": None,
+
+    # CSS classes that are applied to the logo above
+    "site_logo_classes": "img-circle",
+
+    # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
+    "site_icon": None,
+
+    # Welcome text on the login screen
+    "welcome_sign": "Bienvenido. Por favor ingrese sus datos",
+
+    # Copyright on the footer
+    "copyright": "Fiador by jesusmedina0921@gmail.com",
+
+    # List of model admins to search from the search bar, search bar omitted if excluded
+    # If you want to use a single search field you dont need to use a list, you can use a simple string 
+  
+
+    # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
+    "user_avatar": None,
+
+    ############
+    # Top Menu #
+    ############
+
+    
+    #############
+    # User Menu #########@eqweqw@@@@@@@@
+    #############
+
+    # Additional links to include in the user menu on the top right ("app" url type is not allowed)
+    ##"usermenu_links": [
+    ##    {"name": "Docs", "url": "http://localhost:8000/api/docs/", "new_window": False},
+   ##
+    ##],
+
+    #############
+    # Side Menu #
+    #############
+
+    # Whether to display the side menu
+    "show_sidebar": True,
+
+    # Whether to aut expand the menu
+    "navigation_expanded": True,
+
+    # Hide these apps when generating side menu e.g (auth)
+    "hide_apps": [],
+
+    # Hide these models when generating side menu (e.g auth.user)
+    "hide_models": [],
+
+    # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
+    "order_with_respect_to": ["auth", "books", "books.author", "books.book"],
+
+    # Custom links to append to app groups, keyed on app name
+    "custom_links": {
+        "books": [{
+            "name": "Make Messages", 
+            "url": "make_messages", 
+            "icon": "fas fa-comments",
+            "permissions": ["books.view_book"]
+        }]
+    },
+
+    # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
+    # for the full list of 5.13.0 free icon classes
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+    },
+    # Icons that are used when one is not manually specified
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+
+    #################
+    # Related Modal #
+    #################
+    # Use modals instead of popups
+    "related_modal_active": False,
+
+    #############
+    # UI Tweaks #
+    #############
+    # Relative paths to custom CSS/JS scripts (must be present in static files)
+    "custom_css": "css/custom_login.css",
+    "custom_js": None,
+    # Whether to link font from fonts.googleapis.com (use custom_css to supply font otherwise)
+    "use_google_fonts_cdn": True,
+    # Whether to show the UI customizer on the sidebar
+    "show_ui_builder": False,
+
+    ###############
+    # Change view #
+    ###############
+    # Render out the change view as a single form, or in tabs, current options are
+    # - single
+    # - horizontal_tabs (default)
+    # - vertical_tabs
+    # - collapsible
+    # - carousel
+    "changeform_format": "horizontal_tabs",
+    # override change forms on a per modeladmin basis
+    "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
+    
+}
+
+JAZZMIN_UI_TWEAKS = {
+    
+    "theme": "flatly",
+}
+
 
 WSGI_APPLICATION = 'fiados.wsgi.application'
 
@@ -117,9 +260,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Caracas' 
 
 USE_I18N = True
 
@@ -147,12 +290,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ####Mi Codigo
 
 #Aqui indico y permito que URL pueda accedar a la api
-CORS_ALLOW_ALL_ORIGINS = False 
-CORS_ALLOWED_ORIGINS = [
-    "https://fiador.vercel.app",  # Web Produccion
-    "https://localhost",          # App movil
-    "http://localhost:8100",      # Solo se puede usar en desarrollo, para produccion se comenta
-]
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+# ✅ Permitir redirecciones a protocolos personalizados (fiador://)
+ALLOWED_REDIRECT_PROTOCOLS = ['http', 'https', 'fiador']
+
+# ✅ Para versiones más recientes de Django, también necesitas:
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -174,8 +319,8 @@ CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 SECURE_API_HEADER = 'X-Api-Secret'  
-SECURE_API_VALUE = 'eb174615d2782bb216ae760d9df22bd559c17d97c4891a93907ea0f25ea535c5'  # DEBE SER EL MISMO QUE EN ANGULAR
-
+SECURE_API_VALUE = 'tucodigo'  # DEBE SER EL MISMO QUE EN ANGULAR
+##EL CODIGO DE SECURE_API_VALUE ES CREADO POR MI, PUEDE SER EL QUE UNO QUIERA
 AUTH_USER_MODEL = 'api.User'
 
 REST_FRAMEWORK = {
@@ -229,6 +374,125 @@ SIMPLE_JWT = {
     # Actualiza la última hora de inicio de sesión del usuario
     'UPDATE_LAST_LOGIN': True,
 }
+##ESTE CODIGO SALE DE GMAIL DE VERIFICACION EN 2 PASOS...
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'tucrendenciales'
+EMAIL_HOST_PASSWORD = 'tucrendenciales'
+EMAIL_USE_TLS = True
+
+DEFAULT_FROM_EMAIL = 'tucorreo'
+DOMAIN = 'localhost:8100'
+SITE_NAME = 'Fiador' 
+PROTOCOL = 'http'
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend'
+)
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'SEND_ACTIVATION_EMAIL': True,
+    'SET_USERNAME_RETYPE': True,
+    'SET_PASSWORD_RETYPE': True,
+    # Aquí Djoser construirá la URL por mi, por eso no debo poner el dominio
+    'PASSWORD_RESET_CONFIRM_URL': 'password/confirm/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': 'email/confirm/{uid}/{token}',
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': 
+    [
+        #Aqui esta mandando el backend a las urls del frontend
+        'http://localhost:8100/'          #webL
+    ],
+    'SERIALIZERS': {
+        'user_create': 'api.serializers.UserCreateSerializer',
+        'user': 'api.serializers.UserCreateSerializer',
+        'current_user': 'api.serializers.UserCreateSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+    },
+    'EMAIL': {
+        'activation': 'api.custom_email.CreateUser', #Confirmacion de correo
+        'activation_confirm': 'api.custom_email.CustomActivationConfirmEmail', #Mensaje de confirmacion exitosa y activacion de cuenta
+        'password_reset': 'api.custom_email.CustomPasswordResetEmail', #solicitud para recuperar password olvidada
+        'password_changed_confirmation': 'api.custom_email.CustomPasswordConfirmEmail', #enlace que abro para nueva password
+        'username_reset': 'api.custom_email.CustomUsernameResetEmail', #solicitud para cambiar email
+        'email_changed_confirmation': 'api.custom_email.CustomActivationNewEmail',  #solicitud para activar nuevo email 
+    },
+}
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'prompt': 'select_account',  # Fuerza a elegir cuenta cada vez
+    'access_type': 'offline',
+}
+
+SOCIAL_AUTH_UNIQUE_USERNAME = True
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+SOCIAL_AUTH_CLEAN_USERNAME = True
+SOCIAL_AUTH_SLUGIFY_USERNAME = True
+
+# Prevenir duplicados
+SOCIAL_AUTH_GOOGLE_OAUTH2_IGNORE_DUPLICATE_EMAILS = False
+
+# Forzar siempre selección de cuenta
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'prompt': 'select_account',
+    'access_type': 'offline',
+    'include_granted_scopes': 'true'
+}
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_IGNORE_DUPLICATE_EMAILS = False
+SOCIAL_AUTH_UNIQUE_USERNAME = True
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+###ESTE CODIGO SALE DE GOOGLE CLOUD
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = 'tucrendenciales'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'tucrendenciales'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'openid']
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
+
+# En tu settings.py, agrega estas configuraciones:
+SOCIAL_AUTH_PROCESS_EXCEPTIONS = True
+SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+SOCIAL_AUTH_EXCEPTION_HANDLER = 'api.pipeline.social_auth_exception_handler'
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    
+    # Manejar email duplicado TEMPRANO en el proceso
+    'api.pipeline.handle_duplicate_email',
+    
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    
+    # Prevenir sobrescritura
+    'api.pipeline.prevent_user_overwrite',
+    
+    # Nuestra asociación personalizada
+    'api.pipeline.custom_associate_user',
+    
+    'social_core.pipeline.user.create_user', 
+    
+    # Asociación normal (como respaldo)
+    'social_core.pipeline.social_auth.associate_user',
+    
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    
+    # Verificación final
+    'api.pipeline.ensure_unique_association',
+    'api.pipeline.print_jwt_token',
+    'api.pipeline.redirect_with_token',
+)
+
+
 #Configuracion de Swagger
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Fiador API',
@@ -242,10 +506,11 @@ SPECTACULAR_SETTINGS = {
     #Orden de los tags en Swagger
     'TAGS': [
         {'name': 'Login', 'description': 'Operaciones de autenticación'},
-        {'name': 'User', 'description': 'Operaciones relacionadas con los usuarios'},
         {'name': 'Token', 'description': 'Operaciones relacionadas con los tokens JWT'},
-        {'name': 'Producto', 'description': 'Operaciones relacionadas con los productos'},
+        {'name': 'auth', 'description': 'Operaciones relacionadas con la recuperacion de email/password, autenticacion de cuentas etc...'},
+        {'name': 'User', 'description': 'Operaciones relacionadas con los usuarios'},
         {'name': 'Cliente', 'description': 'Operaciones relacionadas con los clientes'},
+        {'name': 'Producto', 'description': 'Operaciones relacionadas con los productos'},
         {'name': 'Fiado', 'description': 'Operaciones relacionadas con los fiados'},
     ],
     'SWAGGER_UI_SETTINGS': {
@@ -254,14 +519,14 @@ SPECTACULAR_SETTINGS = {
 }
 
 
-PWA_APP_NAME = 'Fiador API'
-PWA_APP_DESCRIPTION = "Fiador API"
-PWA_APP_THEME_COLOR = '#0A0302'
-PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_NAME = 'Fiador Admin'
+PWA_APP_DESCRIPTION = "Fiador Admin"
+PWA_APP_THEME_COLOR = '#161c25'
+PWA_APP_BACKGROUND_COLOR = "#161c25"
 PWA_APP_DISPLAY = 'standalone'
 PWA_APP_SCOPE = '/'
 PWA_APP_ORIENTATION = 'any'
-PWA_APP_START_URL = '/'
+PWA_APP_START_URL = '/admin/'
 PWA_APP_STATUS_BAR_COLOR = 'default'
 PWA_APP_ICONS = [
     {'src': '/static/images/icons/icon-72x72.png', 'sizes': '72x72'},

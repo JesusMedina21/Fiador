@@ -11,6 +11,7 @@ import { Producto } from 'src/app/models/producto.model';
 import { lastValueFrom } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 import { NetworkService } from 'src/app/services/network.service';
+import { Network } from '@capacitor/network';
 
 @Component({
   selector: 'app-producto',
@@ -36,6 +37,10 @@ export class ProductoComponent implements OnInit {
 
   isOnline: boolean = true;
   networkChecking: boolean = false;
+
+  isSubmitting: boolean = false;
+
+  private networkListener: any;
 
   constructor(
     private authService: AuthService,
@@ -91,6 +96,13 @@ export class ProductoComponent implements OnInit {
   }
 
   async ngOnInit() {
+
+    // Verificación inicial de conexión
+    await this.checkNetworkStatus();
+
+    // Suscripción a cambios de estado de red
+    this.setupNetworkListeners();
+
     this.networkService.onlineStatus$.subscribe(online => {
       this.isOnline = online;
     });
@@ -98,7 +110,35 @@ export class ProductoComponent implements OnInit {
     this.cargarProductos();
   }
 
+  setupNetworkListeners() {
+    // Listener de Capacitor Network
+    this.networkListener = Network.addListener('networkStatusChange', async (status) => {
+      this.isOnline = status.connected;
+      if (this.isOnline) {
+        // Si hay conexión, recargar los fiados
+        location.reload(); // Recarga la página
+      }
+    });
 
+    // Listener adicional de tu servicio si es necesario
+    this.networkService.onlineStatus$.subscribe(online => {
+      this.isOnline = online;
+    });
+  }
+
+  //Codigo para que cuando de una app y vuelva a entrar los botones sigan habilitados
+  async checkNetworkStatus() {
+    this.networkChecking = true;
+    try {
+      const status = await Network.getStatus();
+      this.isOnline = status.connected;
+    } catch (error) {
+      console.error('Error checking network:', error);
+      this.isOnline = false;
+    } finally {
+      this.networkChecking = false;
+    }
+  }
   async checkAuthentication(): Promise<boolean> {
     // Primero verificar conexión a internet
     const hasConnection = await this.networkService.checkConnection();
@@ -126,9 +166,15 @@ export class ProductoComponent implements OnInit {
   }
 
   async registrar_producto() {
-    // Verifica conexión a internet primero
+    if (this.isSubmitting) return; // Evitar múltiples ejecuciones
+    this.isSubmitting = true; // Bloquear botón
+
     const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
     if (!this.formulario_producto.valid) {
       this.utilsSvc.presentToast({
         message: this.translateService.instant('Completar_Campos'),
@@ -166,6 +212,8 @@ export class ProductoComponent implements OnInit {
 
       if (!response) throw new Error('Error en la respuesta del servidor');
 
+      await loading.dismiss();
+      this.isSubmitting = false;
       this.utilsSvc.presentToast({
         message: this.translateService.instant('Producto agregado'),
         duration: 2000,
@@ -182,6 +230,8 @@ export class ProductoComponent implements OnInit {
       //console.error('Error:', error);
       const mensajeError = error?.error?.non_field_errors?.[0];
 
+      await loading.dismiss();
+      this.isSubmitting = false;
       if (mensajeError === 'The fields usuario, producto_nombre must make a unique set.') {
         this.utilsSvc.presentToast({
           message: this.translateService.instant('Producto error'),
@@ -200,7 +250,9 @@ export class ProductoComponent implements OnInit {
         });
       }
     } finally {
-      await loading.dismiss(); // Siempre se cierra al final
+
+      await loading.dismiss();
+      this.isSubmitting = false;
     }
   }
 
@@ -242,9 +294,15 @@ export class ProductoComponent implements OnInit {
   }
 
   async editarProducto() {
-    // Verifica conexión a internet primero
+    if (this.isSubmitting) return; // Evitar múltiples ejecuciones
+    this.isSubmitting = true; // Bloquear botón
+
     const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
     if (this.formulario_producto.valid && this.productoSeleccionado) {
       const loading = await this.utilsSvc.loading({
         spinner: 'crescent',
@@ -272,6 +330,8 @@ export class ProductoComponent implements OnInit {
           updateData // Envía solo los campos modificables
         ).subscribe({
           next: (response) => {
+            this.isSubmitting = false;
+            loading.dismiss();
             this.utilsSvc.presentToast({
               message: this.translateService.instant('Producto editado'),
               duration: 2000,
@@ -286,6 +346,8 @@ export class ProductoComponent implements OnInit {
           error: (error) => {
             const mensajeError = error?.error?.non_field_errors?.[0];
 
+            this.isSubmitting = false;
+            loading.dismiss();
             if (mensajeError === 'The fields usuario, producto_nombre must make a unique set.') {
               this.utilsSvc.presentToast({
                 message: this.translateService.instant('Producto error'),
@@ -303,11 +365,14 @@ export class ProductoComponent implements OnInit {
                 icon: 'alert-circle-outline'
               });
             }
+            this.isSubmitting = false;
             loading.dismiss();
           }
         });
       } catch (error) {
+        this.isSubmitting = false;
         loading.dismiss(); // Mover aquí
+
       }
     }
   }

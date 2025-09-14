@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, AlertOptions, LoadingController, ModalController, ModalOptions, ToastController, ToastOptions } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class UtilsService {
   router = inject(Router);
   alertCtrl = inject(AlertController);
   
-  constructor(private loadingController: LoadingController) {}
+  constructor(private loadingController: LoadingController, private translateService: TranslateService) {}
 
   // Alerta o aviso de eliminar para que no borre de coñazo 
   async presentAlert(opts?: AlertOptions) {
@@ -24,7 +25,8 @@ export class UtilsService {
   // Cargando
   async loading(options: any) {
     const loading = await this.loadingController.create({
-     // message: options.message || 'Cargando...',
+     
+      message: this.translateService.instant('Cargando...'),
       spinner: options.spinner || 'crescent', // Cambia esto si deseas un spinner diferente
       cssClass: options.cssClass || '',
       backdropDismiss: true // Permitir que se cierre al tocar el fondo

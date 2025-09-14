@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.fiador.com",  
+    "sha256_cert_fingerprints": [
+      "F8:B5:3E:6E:7C:7B:34:67:CD:93:C3:38:75:A4:99:28:E2:09:08:A3:50:F4:CB:00:CE:99:DD:6E:23:70:C7:17"
+    ]
+  }
+}]

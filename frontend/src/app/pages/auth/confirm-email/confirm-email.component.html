@@ -1,0 +1,68 @@
+<ion-content [scrollY]="true" [fullscreen]="true">
+
+  <ion-col size="6">
+    <a routerLink="/login" class="absolute top-24 left-5 z-[1] flex items-center justify-center w-12 h-12 
+          rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+      <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+    </a>
+  </ion-col>
+
+  <div class="min-h-screen flex flex-col justify-center items-center pb-20">
+
+    <form class="formularios" [formGroup]="form" (ngSubmit)="onSubmit()" (keypress.enter)="onSubmit()">
+
+      <div class="flex justify-center">
+        <img width="120px" src="assets/logo.webp" alt="">
+      </div>
+
+      <!-- Email -->
+      <div class="input-formularios">
+        <ion-label>{{ "Nuevo correo" | translate }}</ion-label>
+        <div class="input">
+          <ion-input formControlName="new_email" type="email" autocomplete="email"
+            placeholder="{{ 'Placeholder Nuevo Email' | translate }}"
+            [class.invalid]="form.get('new_email')?.invalid && form.get('new_email')?.touched">
+          </ion-input>
+        </div>
+
+        <!-- Mensajes de error mejorados -->
+        <ion-text color="danger" *ngIf="form.get('new_email')?.touched && form.get('new_email')?.invalid">
+          <p *ngIf="form.get('new_email')?.errors?.['required']">
+            {{ "Correo obligatorio" | translate }}
+          </p>
+          <p *ngIf="form.get('new_email')?.errors?.['email'] || form.get('new_email')?.errors?.['pattern']">
+            {{ "Correo invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <ion-row class="ion-padding-botton mt-6">
+        <ion-col size="12">
+          <ion-button [disabled]="form.invalid || isSubmitting" expand="block" class="gradient-btn" mode="ios"
+            type="submit">
+            {{ "Cambiar email" | translate }}
+            <ion-icon slot="end" name="log-in-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+
+    </form>
+
+  </div>
+
+  <br><br><br>
+
+</ion-content>
+
+
+<!--
+<span *ngIf="!isSubmitting">
+  {{ "Cambiar email" | translate }}
+  <ion-icon slot="end" name="log-in-outline"></ion-icon>
+</span>
+
+<span *ngIf="isSubmitting">
+  <ion-spinner name="crescent" class="mr-2"></ion-spinner>
+  {{ "Cargando..." | translate }}
+</span>
+-->

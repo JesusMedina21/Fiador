@@ -117,6 +117,13 @@ ion-toolbar {
   }
 }
 
+ion-segment-button {
+  --color: #000000; /* gris para cuando NO está activo */
+  --color-checked: #ffffff; /* texto cuando está seleccionado */
+  --indicator-color: #1d4ed8; /* azul del indicador */
+  --background-checked: #1d4ed8; /* fondo cuando está seleccionado */
+}
+
 ion-item {
   --background: transparent;
 }
@@ -199,7 +206,7 @@ ion-button {
 
 
 .gradient-btn {
-  margin-top: 35px;
+  margin-top: 5px;
   --background: var(--ion-color-primary);
   --background-activated: linear-gradient(21deg, var(--ion-color-secondary), var(--ion-color-primary));
   --background-hover: #3a62ac;
@@ -210,6 +217,13 @@ ion-button {
   //--background-activated: linear-gradient(21deg, var(--ion-color-secondary), var(--ion-color-primary));
   --background-hover:  #0f4dc0;
 }
+.gradient-btn3 {
+  margin-top: 5px;
+  --background: #214ea1;
+  --background-activated: linear-gradient(21deg, var(--ion-color-secondary), var(--ion-color-primary));
+  --background-hover: #3a62ac;
+}
+
 
 .alert-button-inner {
   color: white;

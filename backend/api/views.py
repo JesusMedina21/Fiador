@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status, generics
-from fiados.serializers import *
+from api.serializers import *
 
 # from django.contrib.auth.models import User # Modelo original
 from api.models import *
@@ -14,48 +14,306 @@ from rest_framework.response import Response
 
 from api.permissions import *
 
+from api.custom_email import *
+
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshView
 
+from djoser.views import UserViewSet
+from djoser import signals
+from djoser.conf import settings as djoser_settings
+from django.db.utils import IntegrityError  # 👈 Importa esta excepción
+from rest_framework.views import APIView
+from django.core.mail import send_mail
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiResponse,
+    inline_serializer
+)
+# En ConfirmarEmail (cuando mandas el correo al nuevo email)
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.views import View
+from django.db import transaction
+from django.shortcuts import render
 
+class OAuthErrorView(View):
+    template_name = 'oauth_error.html'
+    
+    def get(self, request, *args, **kwargs):
+        error_message = request.GET.get('message', 'No puede iniciar con Google porque ya se creó una cuenta')
+        return render(request, self.template_name, {'error_message': error_message})
 
-@extend_schema(tags=['Token'], request=RefreshTokenSerializer)
-class TokenRefreshView(generics.GenericAPIView):
-    serializer_class = RefreshTokenSerializer  # 👈 Serializador creado manualmente
+@extend_schema(
+    request=ActivarEmailSerializer,
+    description='Confirma el nuevo email usando el UID y token del enlace'
+)
+class CustomUserViewSet(UserViewSet):
+    
+    def reset_password(self, request, *args, **kwargs):
+        """
+        Bloquea la solicitud de restablecimiento de contraseña para usuarios de Google.
+        """
+        # 1. Busca al usuario por el correo electrónico
+        email_serializer = self.get_serializer(data=request.data)
+        email_serializer.is_valid(raise_exception=True)
+        email = email_serializer.validated_data.get("email")
 
+        try:
+            # ✅ CORRECTO: Usa el modelo de usuario importado
+            user = User.objects.get(email=email)
+            
+            # 2. Verifica si el usuario tiene una cuenta social asociada
+            if user.social_auth.exists():
+                return Response(
+                    {"detail": "No puedes restablecer la contraseña. Tu cuenta está registrada a través de Google."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        refresh = serializer.validated_data.get('refresh')
+        # ✅ CORRECTO: Usa el modelo de usuario importado
+        except User.DoesNotExist:
+            # Si el usuario no existe, Djoser ya maneja este caso
+            pass
 
-        if refresh:
-            try:
-                token = RefreshToken(refresh)
-                access_token = token.access_token
-                return Response({'access': str(access_token)}, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({'error': 'Token inválido'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({'error': 'Se requiere el token de refresco'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-@extend_schema(tags=['Login'])
-class LoginView(generics.GenericAPIView):
-    serializer_class = LoginSerializer
-    def post(self, request, *args, **kwargs):
+        # 3. Si no es un usuario de Google, delega en la lógica original de Djoser.
+        return super().reset_password(request, *args, **kwargs)
+    
+    def activation(self, request, *args, **kwargs):
+        # Lógica de activación manual
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        
-        # Generar tokens
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_200_OK)
+        user = serializer.user
+        user.is_active = True
+        user.save()
 
+        # Enviar correo personalizado
+        CustomActivationConfirmEmail(context={'user': user}).send(to=user.email)
+
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+            "detail": "¡Cuenta activada con éxito! Bienvenido a Fiador.",
+                "tokens": {
+                    "access": str(refresh.access_token),
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+@extend_schema(
+    request=ActivarNuevoEmailSerializer,
+    description='Confirma el nuevo email usando el UID y token del enlace'
+)
+class ActivarNuevoEmailView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ActivarNuevoEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.user
+
+        if not user.pending_email:
+            return Response(
+                {"detail": "No hay cambio de email pendiente"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not default_token_generator.check_token(user, serializer.validated_data['token']):
+            return Response(
+                {"token": "Token inválido o expirado"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        new_email = user.pending_email
+        old_email = user.email
+        
+        try:
+            with transaction.atomic():
+                user.email = new_email
+                user.pending_email = None
+                user.email_change_token = None
+                user.save()
+        except IntegrityError:
+            return Response(
+                {"detail": "Este correo electrónico ya está en uso"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Enviar notificaciones
+        email_context = {
+            'user': user,
+            'new_email': new_email,
+            'email': new_email,  # Añade esto para el template
+            'old_email': old_email
+        }
+
+        confirmation_email = CustomActivationNewEmail(request, email_context)
+        confirmation_email.send(to=[new_email])
+
+        notification_email = CustomOldEmailNotification(request, email_context)
+        notification_email.send(to=[old_email])
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response(
+            {
+                "detail": "Email cambiado exitosamente",
+                "tokens": {
+                    "access": str(refresh.access_token),
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+@extend_schema(
+    tags=["auth"],
+    description="Envía un correo al usuario autenticado para confirmar el cambio de email.",
+    request=ChangeEmailRequestSerializer,  # O ChangeEmailRequestSerializer si necesitas datos
+    responses={
+        200: OpenApiResponse(
+            description="Correo enviado correctamente",
+            response=inline_serializer(
+                name="ChangeEmailResponse",
+                fields={"detail": serializers.CharField()}
+            )
+        ),
+        400: OpenApiResponse(description="El usuario está registrado con Google y no puede cambiar su email."),
+        401: OpenApiResponse(description="No autenticado")
+    }
+)
+class ChangeEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user  # 🔹 El email ya viene del token JWT
+
+        # 🔹 Lógica para bloquear el cambio si el usuario está asociado con una cuenta social
+        if user.social_auth.exists():
+            return Response(
+                {"detail": "No puedes cambiar tu email. Tu cuenta está registrada a través de Google."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Generar UID y token (igual que hace Djoser internamente)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        domain = settings.DOMAIN
+        protocol = getattr(settings, "PROTOCOL", "http")
+
+        # Usamos la URL de Djoser, no la hardcodeada
+        relative_url = djoser_settings.USERNAME_RESET_CONFIRM_URL.format(uid=uid, token=token)
+        confirm_url = f"{protocol}://{domain}/{relative_url}"
+
+        # Contexto para el email
+        context = {
+            "user": user,
+            "uid": uid,
+            "token": token,
+            "confirm_url": confirm_url,
+        }
+
+        # Enviar email con tu clase custom (respetando la URL de Djoser)
+        activation_email = CustomUsernameResetEmail(request, context)
+        activation_email.send(to=[user.email])
+
+        return Response(
+            {"detail": "Se ha enviado un correo con el enlace de confirmación"},
+            status=status.HTTP_200_OK
+        )
+
+@extend_schema(
+    request=ForgotEmailSerializer,
+    description='Cambiar email olvidado'
+)
+class ForgotEmailView(APIView):
+    permission_classes = []  # acceso público
+
+    def post(self, request):
+        serializer = ForgotEmailSerializer(data=request.data)
+        if serializer.is_valid():
+            recovery_email = serializer.validated_data["recovery_email"]
+            user = User.objects.get(recovery_email=recovery_email)
+
+            # Generar UID y token
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+            token = default_token_generator.make_token(user)
+
+            # Dominio y protocolo desde settings.py
+            domain = settings.DOMAIN
+            protocol = getattr(settings, "PROTOCOL", "http")
+
+            # 🚀 Usa el template de URL de DJOSER
+            relative_url = djoser_settings.USERNAME_RESET_CONFIRM_URL.format(uid=uid, token=token)
+            confirm_url = f"{protocol}://{domain}/{relative_url}"
+
+            # Contexto para la plantilla
+            email_context = {
+                "user": user,
+                "username": user.username,
+                "confirm_url": confirm_url,
+            }
+
+            # Usamos la clase custom
+            activation_email = CustomForgotEmail(request, email_context)
+            activation_email.send(to=user.recovery_email)
+
+            return Response(
+                {"detail": "Se ha enviado un correo con el enlace de confirmación"},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    request=ConfirmarEmailSerializer,
+    description='Confirma el cambio de email usando el UID y token del enlace'
+)
+
+class ConfirmarEmail(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ConfirmarEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.user
+        token = serializer.validated_data['token']
+        new_email = serializer.validated_data["new_email"]
+
+        if not default_token_generator.check_token(user, token):
+            return Response(
+                {"token": "Token inválido o expirado"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(email=new_email).exists():
+            return Response(
+                {"new_email": ["Este correo electrónico ya está en uso."]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Guardamos directamente en los nuevos campos
+        user.pending_email = new_email
+        user.email_change_token = default_token_generator.make_token(user)
+        user.save()
+
+        email_context = {
+            'user': user,
+            'new_email': new_email,
+            'old_email': user.email,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': user.email_change_token
+        }
+
+        activation_email = CustomEmailReset(request, email_context)
+        activation_email.send(to=[new_email])
+
+        return Response(
+            {"detail": "Se ha enviado un correo de confirmación al nuevo email"},
+            status=status.HTTP_200_OK
+        )
+
+    
 ###################################3333333#USER###############################################
 
 @extend_schema_view(
@@ -68,10 +326,10 @@ class LoginView(generics.GenericAPIView):
     destroy=extend_schema(tags=['User']),
 )
 
-class UserViewSet(viewsets.ModelViewSet):
+class CuentaViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-
+    serializer_class = CuentaSerializer
+    
     def get_queryset(self):
         if self.action == 'list':
             # Solo admin puede listar todos los usuarios
@@ -106,10 +364,29 @@ class UserViewSet(viewsets.ModelViewSet):
         user = User.objects.create_user(
             username=serializer.validated_data['username'],
             email=serializer.validated_data['email'],
-            password=serializer.validated_data['password']
+            recovery_email=serializer.validated_data['recovery_email'],
+            password=serializer.validated_data['password'],
+            is_active=False  # ← CUENTA INACTIVA HASTA CONFIRMACIÓN
         )
+        # ***** ENVIAR CORREO DE ACTIVACIÓN *****
+        signals.user_registered.send(
+            sender=self.__class__, user=user, request=self.request
+        )
+        
+        # Usar el sistema de emails de Djoser
+        if getattr(djoser_settings, 'SEND_ACTIVATION_EMAIL', True):
+            context = {"user": user}
+            # Asegúrate de que tienes configurado el email de activación en DJOSER['EMAIL']
+            djoser_settings.EMAIL.activation(self.request, context).send([user.email])
+        # ***************************************
 
-        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "detail": "Usuario registrado. Por favor revise su email para activar la cuenta.",
+                "user": CuentaSerializer(user).data
+            },
+            status=status.HTTP_201_CREATED
+        )
    
     def update(self, request, *args, **kwargs):
         if not kwargs.get('partial', False):
@@ -122,7 +399,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs) 
-
 
 ###################################PRODUCTOS###############################################
 
@@ -175,9 +451,13 @@ class ProductoViewSet(viewsets.ModelViewSet):
         (excepto si son staff, que pueden ver todos)
         """
         queryset = super().get_queryset()
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(usuario=self.request.user)
-        return queryset
+        #Desarrollo
+        #if not self.request.user.is_staff:
+        #    queryset = queryset.filter(usuario=self.request.user)
+        #return queryset
+
+        #Produccion
+        return queryset.filter(usuario=self.request.user)
 
     def update(self, request, *args, **kwargs):
         if not kwargs.get('partial', False):
@@ -237,9 +517,13 @@ class ClienteViewSet(viewsets.ModelViewSet):
         (excepto si son staff, que pueden ver todos)
         """
         queryset = super().get_queryset()
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(fiador=self.request.user)
-        return queryset
+        #Desarrollo
+        #if not self.request.user.is_staff:
+        #    queryset = queryset.filter(fiador=self.request.user)
+        #return queryset
+        
+        #Produccion
+        return queryset.filter(fiador=self.request.user)
     
     def update(self, request, *args, **kwargs):
         if not kwargs.get('partial', False):
@@ -316,3 +600,46 @@ class FiadoViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs) 
+
+
+@extend_schema(tags=['Token'], request=RefreshTokenSerializer)
+class TokenRefreshView(generics.GenericAPIView):
+    serializer_class = RefreshTokenSerializer  # 👈 Serializador creado manualmente
+
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        refresh = serializer.validated_data.get('refresh')
+
+        if refresh:
+            try:
+                token = RefreshToken(refresh)
+                access_token = token.access_token
+                return Response({'access': str(access_token)}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': 'Token inválido'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Se requiere el token de refresco'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@extend_schema(tags=['Login'])
+class LoginView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        
+        if not user.is_active:
+            return Response(
+                {"detail": "Tu cuenta no esta activa porque no has confirmado tu email. Por favor, revisa tu correo electrónico para activarla."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        # Generar tokens
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_200_OK)

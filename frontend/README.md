@@ -20,7 +20,7 @@ node -v
 
 ### Verificar la política de ejecución de scripts
 
-- Estaremos trabajando con Nx, una herramienta que nos permite construir aplicaciones de una forma sencilla a través de Monorepo por lo que vas a estar ejecutando comandos desde el CLI de la herramienta. En el caso del sistema operativo Windows esto puede dar problemas debido a que la configuración para ejecutar comandos de herramientas externas está desactivado. Para activarlo sigue los siguientes pasos:
+- Estaremos trabajando con Node para que Ionic funcione, por lo que vas a estar ejecutando comandos desde la consola/cmd. En el caso del sistema operativo Windows esto puede dar problemas debido a que la configuración para ejecutar comandos de herramientas externas está desactivado. Para activarlo sigue los siguientes pasos:
 
 - Abre una terminal de Windows Powershell como administrador
 - Ejecuta el siguiente comando:

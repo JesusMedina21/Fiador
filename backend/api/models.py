@@ -2,6 +2,7 @@ from django.db import models
 # from django.contrib.auth.models import User # Modelo original
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
+from django.db.models import Q, F
 
 class User(AbstractUser):
     #Biometric es el campo que va a necesitar los usuarios para almacenar la huella
@@ -16,10 +17,21 @@ class User(AbstractUser):
     #sobreescribir el campo email y e identificar el email en USERNAME_FIELD y colocar el
     #REQUIRED_FIELDS a juro porque sino, el codigo no va a funcionar por exigencias del framework
     email = models.EmailField(unique=True)
+    recovery_email = models.EmailField(unique=True, null=True, blank=True)
+    pending_email = models.EmailField(blank=True, null=True)  # Nuevo campo
     USERNAME_FIELD = 'email' 
     REQUIRED_FIELDS = ['username'] 
     
     class Meta:
+        verbose_name = 'Usuario'
+        verbose_name_plural = 'Usuarios'
+        ordering = ['-date_joined']  # Ordenar por fecha de registro descendente
+        constraints = [
+            models.CheckConstraint(
+                check=~Q(email=F('recovery_email')),
+                name="email_diff_recovery"
+            )
+        ]
         # Asegúrate de que no haya restricciones de unicidad
         unique_together = ()  
 
@@ -34,10 +46,14 @@ class Producto(models.Model):
         #Si el producto pertenece a el, el producto puede tener varias veces el mismo nombre si pertenece
         #a usuarios diferentes 
         unique_together = ('usuario', 'producto_nombre')
+        verbose_name = 'Producto'
+        verbose_name_plural = 'Productos'
         ordering = ['-id']  # Ordenar por ID descendente
 
     def __str__(self):
-        return self.producto_nombre
+        return (f"Producto {self.producto_nombre}, "
+                f"de la Cuenta: {self.usuario.username} ({self.usuario.email}) "
+               )
 
 
 
@@ -46,11 +62,15 @@ class Cliente(models.Model):
     cliente_nombre = models.CharField(max_length=50, blank=False)
 
     def __str__(self):
-        return self.cliente_nombre
+        return (f"Cliente {self.cliente_nombre}, "
+                f"de la Cuenta: {self.fiador.username} ({self.fiador.email}) "
+               )
     
     class Meta:
         #Este codigo hace que solamente el nombre del cliente sea unico si pertenece al mismo fiador
         unique_together = ('fiador', 'cliente_nombre')
+        verbose_name = 'Cliente'
+        verbose_name_plural = 'Clientes'
         ordering = ['-id']  # Ordenar por ID descendente
 
 
@@ -78,11 +98,14 @@ class Fiado(models.Model):
     fecha_registro = models.DateTimeField() 
 
     def __str__(self):
-        #return f"{self.cliente}" 
-        return f"Fiado de {self.cliente.cliente_nombre} - {self.monto_total}"
+        return (f"Fiado del Cliente {self.cliente.cliente_nombre}, "
+                f"Cuenta: {self.cliente.fiador.username} ({self.cliente.fiador.email}), "
+                f"Monto: ${self.monto_total}")
     
     class Meta:
         ordering = ['cliente']
+        verbose_name = 'Fiado'
+        verbose_name_plural = 'Fiados'
 
     def clean(self):
         if self.monto_total <= 0:
@@ -98,7 +121,7 @@ class DetalleFiado(models.Model):
     cantidad = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
 
 
-# Nuevo modelo intermedio para la relación Many-to-Many con cantidad
+# Nuevo modelo intermedio para la relación Many-to-Many 
 class DeudaPendiente(models.Model):
     fiado = models.ForeignKey(Fiado, on_delete=models.CASCADE)
     productos = models.ForeignKey(Producto, on_delete=models.CASCADE)
@@ -117,5 +140,9 @@ class DeudaPendiente(models.Model):
     blank=False,
     null=False,
     )
+    fecha_registro = models.DateTimeField()  
+
+    def __str__(self):
+        return f"{self.productos.producto_nombre} (x{self.cantidad}) - {self.fecha_registro}"
 
 

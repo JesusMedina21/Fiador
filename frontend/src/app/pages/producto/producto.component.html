@@ -4,7 +4,7 @@
   <h1 class="loading-text text-black dark:text-white">{{ "Cargando Producto" | translate }}</h1>
 </div>
 
-<ion-content *ngIf="isLoggedIn !== null" [scrollY]="true">
+<ion-content *ngIf="isLoggedIn !== null" [scrollY]="true" [fullscreen]="true">
 
   <header class="relative py-4">
     <div class="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
@@ -30,28 +30,30 @@
           {{ "Cerrar sesion" | translate }}
         </button>
       </div>
-      <div class="flex items-center justify-between" *ngIf="isLoggedIn && isMobile">
+      <div *ngIf="isLoggedIn && isMobile">
         <br><br>
         <!-- Botón de regresar (izquierda) -->
-        <a href=""
-          class="flex items-center justify-center w-12 h-12 rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
-          <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
-        </a>
-
-        <!-- Contenedor para los botones Cliente y Cerrar sesión -->
-        <div class="flex items-center space-x-4">
-          <!-- Botón Cliente -->
-          <a href="clients"
-            class="rounded-md bg-color-primary hover:bg-color-primary-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
-            {{ "Cliente" | translate }}
+        <div class="flex items-center justify-between">
+          <a href=""
+            class="flex items-center justify-center w-12 h-12 rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+            <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
           </a>
 
+          <!-- Contenedor para los botones Cliente y Cerrar sesión -->
+          <div class="flex items-center space-x-4">
+            <!-- Botón Cliente -->
+            <a href="clients"
+              class="rounded-md bg-color-primary hover:bg-color-primary-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition">
+              {{ "Cliente" | translate }}
+            </a>
+
+          </div>
+          <!-- Botón Cerrar sesión -->
+          <button (click)="cerrarSesion()"
+            class="rounded-md bg-color-rojo hover:bg-red-800 px-3 py-2 text-xs sm:py-2.5 sm:text-sm text-white transition">
+            {{ "Cerrar sesion" | translate }}
+          </button>
         </div>
-        <!-- Botón Cerrar sesión -->
-        <button (click)="cerrarSesion()"
-          class="rounded-md bg-color-rojo hover:bg-red-800 px-3 py-2 text-xs sm:py-2.5 sm:text-sm text-white transition">
-          {{ "Cerrar sesion" | translate }}
-        </button>
       </div>
     </div>
   </header>
@@ -97,16 +99,18 @@
               <span class="text-zinc-900 dark:text-gray-200">{{ producto.precio | currency }} </span>
             </p>
           </div>
-          <ion-button color="tertiary" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
-            [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
-            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEditar(producto)">
-            {{"Editar" | translate }}
-          </ion-button>
-          <ion-button color="danger" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
-            [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
-            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEliminar(producto)">
-            <p class="text-white">{{"Borrar" | translate }}</p>
-          </ion-button>
+          <div class="flex flex-col space-y-2">
+            <ion-button color="tertiary" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
+              [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+              class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEditar(producto)">
+              {{"Editar" | translate }}
+            </ion-button>
+            <ion-button color="danger" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
+              [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+              class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEliminar(producto)">
+              <p class="text-white">{{"Borrar" | translate }}</p>
+            </ion-button>
+          </div>
         </div>
       </li>
 
@@ -114,7 +118,7 @@
       <div *ngIf="productos.length === 0" class="text-center py-4">
         <h1 class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r bg-color-primary
           dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
-     
+
           {{ !isOnline ? ('ERROR_CONEXION_INTERNET_RECARGA' | translate) : ('Producto no hay' | translate) }}
         </h1>
       </div>
@@ -129,7 +133,7 @@
               bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
               dark:bg-[#12171f] dark:bg-none flex justify-center items-center
               ">
-    <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_producto"
+    <form class="formularios w-full max-h-[90vh] overflow-y-auto pb-20" [formGroup]="formulario_producto"
       (ngSubmit)="registrar_producto()" (keypress.enter)="registrar_producto()">
       <!--El keypress es para que cuando el usuario presione la tecla enter registre el producto-->
       <!--Campo usuario-->
@@ -184,11 +188,11 @@
         </ion-text>
       </div>
 
-      <ion-row class="ion-padding-bottom">
+      <ion-row class="ion-padding-bottom mt-6">
         <ion-col size="12">
           <ion-row>
             <ion-col size="6">
-              <ion-button [disabled]="formulario_producto.invalid" class="gradient-btn" mode="ios" type="submit">
+              <ion-button [disabled]="formulario_producto.invalid || isSubmitting" class="gradient-btn" mode="ios" type="submit">
                 {{ "Producto Registrar" | translate }}
                 <ion-icon slot="end" name="log-in-outline"></ion-icon>
               </ion-button>
@@ -208,7 +212,7 @@
   <div *ngIf="showEditModal" class="fixed inset-0 py-4 z-[100]
             bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
             dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
-    <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_producto"
+    <form class="formularios w-full max-h-[90vh] overflow-y-auto pb-20" [formGroup]="formulario_producto"
       (ngSubmit)="editarProducto()">
       <h1 class="rounded-xl left-0 w-full py-4 z-[100]
             bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
@@ -257,11 +261,11 @@
         </ion-text>
       </div>
 
-      <ion-row class="ion-padding-bottom">
+      <ion-row class="ion-padding-bottom mt-6">
         <ion-col size="12">
           <ion-row>
             <ion-col size="6">
-              <ion-button [disabled]="formulario_producto.invalid" class="gradient-btn" mode="ios" type="submit">
+              <ion-button [disabled]="formulario_producto.invalid || isSubmitting" class="gradient-btn" mode="ios" type="submit">
                 {{ "Producto editar" | translate }}
               </ion-button>
             </ion-col>

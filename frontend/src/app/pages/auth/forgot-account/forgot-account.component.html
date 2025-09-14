@@ -1,0 +1,112 @@
+<ion-content [scrollY]="true" [fullscreen]="true">
+
+  <ion-col size="6">
+    <a href="" class="absolute top-16 left-5 z-[1] flex items-center justify-center w-12 h-12 
+          rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+      <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+    </a>
+  </ion-col>
+
+
+  <div class="min-h-screen flex flex-col justify-center items-center pb-20">
+
+    <div class="flex justify-center">
+      <ion-segment [(ngModel)]="tipoRecuperacion" value="password" mode="ios"
+        class="mb-6 w-auto rounded-full bg-[#3668cc] dark:bg-gray-800 p-1 text-black shadow-md">
+        <ion-segment-button value="password" class="px-3 py-2 font-semibold text-sm"
+          [class.bg-blue-600]="tipoRecuperacion === 'password'" [class.text-white]="tipoRecuperacion === 'password'"
+          [class.text-gray-400]="tipoRecuperacion !== 'password'">
+          <ion-label>{{ "Olvide mi contraseña" | translate }}</ion-label>
+        </ion-segment-button>
+
+        <ion-segment-button value="email" class=" px-3 py-2 font-semibold text-sm"
+          [class.bg-blue-600]="tipoRecuperacion === 'email'" [class.text-white]="tipoRecuperacion === 'email'"
+          [class.text-gray-400]="tipoRecuperacion !== 'email'">
+          <ion-label>{{ "Olvide mi email" | translate }}</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <div class="flex justify-center">
+      <img width="120px" src="assets/logo.webp" alt="">
+    </div>
+
+    <form *ngIf="tipoRecuperacion === 'password'" [formGroup]="formulario_forgot" (ngSubmit)="enviarReset()"
+      (keypress.enter)="enviarReset()">
+      <!--El keypress es para que cuando el usuario presione la tecla enter inicie sesion-->
+
+
+
+      <div class="input-formularios">
+        <ion-label>{{ "Correo" | translate }}</ion-label>
+        <!--input-->
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="email" type="email" autocomplete="email"
+            placeholder="{{ 'Placeholder Correo' | translate }}">
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para Email -->
+        <ion-text color="danger"
+          *ngIf="formulario_forgot.get('email')?.touched && formulario_forgot.get('email')?.invalid">
+          <p *ngIf="formulario_forgot.get('email')?.errors?.['required']">
+            {{ "Correo obligatorio" | translate }}
+          </p>
+          <p *ngIf="formulario_forgot.get('email')?.errors?.['email']">
+            {{ "Correo invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <ion-row class="ion-padding-botton mt-6">
+        <!--Web-->
+        <ion-col size="12">
+          <!--Logeo-->
+
+          <ion-button [disabled]="formulario_forgot.invalid || isSubmitting" expand="block" class="gradient-btn"
+            mode="ios" type="submit">
+            {{ "Recuperar Contraseña" | translate }}
+            <ion-icon slot="end" name="log-in-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+
+    </form>
+
+    <!-- 📧 FORMULARIO: Olvidé mi email -->
+    <form *ngIf="tipoRecuperacion === 'email'" [formGroup]="formulario_email" (ngSubmit)="enviarResetEmail()">
+      <!--El keypress es para que cuando el usuario presione la tecla enter inicie sesion-->
+
+
+      <div class="input-formularios">
+        <ion-label>{{ "Correo Secundario" | translate }}</ion-label>
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="email" type="email" autocomplete="email"
+            placeholder="{{ 'Ingresa tu correo alternativo' | translate }}">
+          </ion-input>
+        </div>
+        <ion-text color="danger"
+          *ngIf="formulario_email.get('email')?.touched && formulario_email.get('email')?.invalid">
+          <p *ngIf="formulario_email.get('email')?.errors?.['required']">{{ "Correo obligatorio" | translate }}</p>
+          <p *ngIf="formulario_email.get('email')?.errors?.['email']">{{ "Correo inválido" | translate }}</p>
+        </ion-text>
+      </div>
+
+      <ion-row class="ion-padding-botton mt-6">
+        <!--Web-->
+        <ion-col size="12">
+          <!--Logeo-->
+
+          <ion-button [disabled]="formulario_email.invalid || isSubmitting" expand="block" class="gradient-btn"
+            mode="ios" type="submit">
+            {{ "Recuperar Email" | translate }}
+            <ion-icon slot="end" name="log-in-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </form>
+
+  </div>
+
+  <br><br><br>
+
+</ion-content>

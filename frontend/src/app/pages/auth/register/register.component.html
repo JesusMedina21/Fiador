@@ -1,14 +1,14 @@
-<ion-content [scrollY]="true">
+<ion-content [scrollY]="true" [fullscreen]="true">
 
     <ion-col size="6">
         <a href="" class="absolute top-24 left-5 z-[1] flex items-center justify-center w-12 h-12 
           rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
-          <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+            <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
         </a>
     </ion-col>
 
- 
-    <div class="min-h-screen flex flex-col justify-center items-center">
+
+    <div class="min-h-screen flex flex-col justify-center items-center pb-20">
 
         <form class="formularios" [formGroup]="formulario_registro" (ngSubmit)="registrar()"
             (keypress.enter)="registrar()">
@@ -59,6 +59,25 @@
                 </ion-text>
             </div>
             <div class="input-formularios">
+                <ion-label>{{ "Correo Recuperacion" | translate }}</ion-label>
+                <!--input-->
+                <div class="input">
+                    <ion-input class="focus:outline-none focus:ring-0" formControlName="recovery_email" type="email"
+                        autocomplete="email" placeholder="{{ 'Placeholder Correo Recuperacion' | translate }}">
+                    </ion-input>
+                </div>
+                <!-- Mensajes de error para Email -->
+                <ion-text color="danger"
+                    *ngIf="formulario_registro.get('recovery_email')?.touched && formulario_registro.get('recovery_email')?.invalid">
+                    <p *ngIf="formulario_registro.get('recovery_email')?.errors?.['required']">
+                        {{ "Correo Recovery obligatorio" | translate }}
+                    </p>
+                    <p *ngIf="formulario_registro.get('recovery_email')?.errors?.['recovery_email']">
+                        {{ "Correo Recovery invalido" | translate }}
+                    </p>
+                </ion-text>
+            </div>
+            <div class="input-formularios">
                 <ion-label>{{ "Contraseña" | translate }}</ion-label>
                 <!-- input -->
                 <div class="input">
@@ -100,32 +119,45 @@
                 </ion-text>
             </div>
 
-            <!--
-        <div class="flex justify-end">
-          <a href="forgot-password" class="bg-green">{{ "Olvido contraseña" | translate }}</a>
-        </div> 
-        -->
+            <div class="flex justify-end">
+                <a href="forgot-account"
+                    class="text-black dark:text-white bg-green hover:text-lg transition-all duration-200">{{ "Olvido
+                    datos" | translate }}</a>
+            </div>
 
-            <ion-row class="ion-padding-botton">
+            <ion-row class="ion-padding-botton mt-6">
 
-                <!--Web-->
                 <ion-col size="12">
                     <!--Logeo-->
-                    <ion-button [disabled]="formulario_registro.invalid" expand="block" class="gradient-btn" mode="ios"
-                        type="submit">
+                    <ion-button [disabled]="formulario_registro.invalid  || isSubmitting" expand="block"
+                        class="gradient-btn" mode="ios" type="submit">
                         {{ "Registrarse" | translate }}
                         <ion-icon slot="end" name="log-in-outline"></ion-icon>
                     </ion-button>
                 </ion-col>
 
+
+                <ion-col size="12">
+                    <ion-button [disabled]="isSubmitting" (click)="googleLogin()" *ngIf="!isMobile" 
+                     expand="block" class="gradient-btn3" mode="ios">
+                        {{ "Registrarse con Google" | translate }}
+                        <ion-icon slot="end" name="logo-google"></ion-icon>
+                    </ion-button>
+                    <ion-button [disabled]="isSubmitting" (click)="googleLoginMovil()" *ngIf="isMobile" 
+                     expand="block" class="gradient-btn3" mode="ios">
+                        {{ "Registrarse con Google" | translate }}
+                        <ion-icon slot="end" name="logo-google"></ion-icon>
+                    </ion-button>
+                </ion-col>
+
             </ion-row>
-
-            <a class="text-black dark:text-white" href="login">{{ "Con_cuenta" | translate }}
-                <strong class="hover:text-lg transition-all duration-200"> 
+            <div class="text-center mt-4"> <!-- Añadido mt-4 -->
+                <a class="text-black dark:text-white" href="login">{{ "Con_cuenta" | translate }}
+                    <strong class="hover:text-lg transition-all duration-200">
                         {{ "Inicia sesion" | translate }}
-                </strong>
-            </a>
-
+                    </strong>
+                </a>
+            </div>
         </form>
 
 

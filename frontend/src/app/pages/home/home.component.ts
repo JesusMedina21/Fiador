@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonicModule, PopoverController } from '@ionic/angular';
-import { TranslateModule, TranslateService } from '@ngx-translate/core'; // Importa el TranslateModule
+import { IonicModule, Platform, PopoverController } from '@ionic/angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core'; 
 import { TraductorService } from 'src/app/services/traductor.service';
-import { AuthService } from 'src/app/services/auth.service'; // Importa el AuthService
-import { Router } from '@angular/router'; // Importa Router para manejar redirecciones
+import { AuthService } from 'src/app/services/auth.service'; 
+import { Router } from '@angular/router'; 
 import { UtilsService } from 'src/app/services/utils.service';
 import { SettingsComponent } from 'src/app/pages/shared/settings/settings.component';
 import { ClienteService } from 'src/app/services/cliente.service';
@@ -19,12 +19,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Capacitor } from '@capacitor/core';
 import { NetworkService } from 'src/app/services/network.service';
 import { Network } from '@capacitor/network';
+import { DateFormatPipe } from 'src/app/pipes/date-format.pipe';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  imports: [IonicModule, TranslateModule, FormsModule, CommonModule, ReactiveFormsModule],
+  imports: [IonicModule, TranslateModule, FormsModule, CommonModule, ReactiveFormsModule, DateFormatPipe],
   standalone: true,
 })
 export class HomeComponent implements OnInit {
@@ -68,6 +69,9 @@ export class HomeComponent implements OnInit {
   isOnline: boolean = true;
   networkChecking: boolean = false;
 
+  isSubmitting: boolean = false;
+
+  private networkListener: any;
   private readonly fb = inject(FormBuilder);
 
   constructor(
@@ -80,7 +84,8 @@ export class HomeComponent implements OnInit {
     private clienteService: ClienteService,
     private productoService: ProductoService,
     private FiadoService: FiadosService,
-    private networkService: NetworkService
+    private networkService: NetworkService,
+    private platform: Platform
   ) {
     // Verifica si la plataforma es móvil
     this.isMobile = Capacitor.getPlatform() === 'android' || Capacitor.getPlatform() === 'ios';
@@ -117,6 +122,17 @@ export class HomeComponent implements OnInit {
   }
 
   async ngOnInit() {
+    // Verificación inicial de conexión
+    await this.checkNetworkStatus();
+
+    // Suscripción a cambios de estado de red
+    this.setupNetworkListeners();
+
+    // Manejar evento de resume (volver a la app)
+    this.platform.resume.subscribe(() => {
+      this.checkNetworkStatus(); // Verificar conexión al volver
+    });
+
     this.networkService.onlineStatus$.subscribe(online => {
       this.isOnline = online;
     });
@@ -152,6 +168,44 @@ export class HomeComponent implements OnInit {
 
     });
 
+  }
+  //Codigo para que cuando de una app y vuelva a entrar los botones sigan habilitados
+  async checkNetworkStatus() {
+    this.networkChecking = true;
+    try {
+      const status = await Network.getStatus();
+      this.isOnline = status.connected;
+    } catch (error) {
+      console.error('Error checking network:', error);
+      this.isOnline = false;
+    } finally {
+      this.networkChecking = false;
+    }
+  }
+
+
+  setupNetworkListeners() {
+    // Listener de Capacitor Network
+    this.networkListener = Network.addListener('networkStatusChange', async (status) => {
+      this.isOnline = status.connected;
+      if (this.isOnline) {
+        // Si hay conexión, recargar los fiados
+        location.reload(); // Recarga la página
+      }
+    });
+
+    // Listener adicional de tu servicio si es necesario
+    this.networkService.onlineStatus$.subscribe(online => {
+      this.isOnline = online;
+    });
+  }
+
+  ngOnDestroy() {
+    // Limpiar listeners
+    if (this.networkListener) {
+      this.networkListener.remove();
+    }
+    window.removeEventListener('languageChanged', () => { });
   }
 
   async checkAuthentication(): Promise<boolean> {
@@ -207,9 +261,15 @@ export class HomeComponent implements OnInit {
   }
 
   async registrar_fiado() {
-    // Verifica conexión a internet primero
+    if (this.isSubmitting) return; // Evitar múltiples ejecuciones
+    this.isSubmitting = true; // Bloquear botón
+
     const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
 
     // Validación manual para asegurar que al menos productos o monto_total estén presentes
     if (!this.validarFormulario()) {
@@ -246,6 +306,8 @@ export class HomeComponent implements OnInit {
       // 4. Registrar el fiado (usando await para esperar la respuesta)
       const response = await this.FiadoService.registrarFiado(fiadoData).toPromise();
 
+      await loading.dismiss();
+      this.isSubmitting = false;
 
       this.utilsSvc.presentToast({
         message: this.translateService.instant('Fiado agregado'),
@@ -275,7 +337,9 @@ export class HomeComponent implements OnInit {
         icon: 'alert-circle-outline'
       });
     } finally {
+
       await loading.dismiss();
+      this.isSubmitting = false;
     }
   }
   ///Todo este codigo es para poder agregar el producto al Fiado
@@ -379,9 +443,10 @@ export class HomeComponent implements OnInit {
     try {
       const Fiador = await lastValueFrom(this.FiadoService.obtenerFiado());
       this.Fiador = Fiador;
+      //console.log('Fiador procesados:', this.Fiador);
       this.fiadosFiltrados = [...this.Fiador]; // Inicializa los fiados filtrados
     } catch (error) {
-      console.error('Error al cargar Fiador:', error);
+      //console.error('Error al cargar Fiador:', error);
       this.utilsSvc.presentToast({
         message: this.translateService.instant('Fiado error'),
         duration: 2000,
@@ -417,8 +482,15 @@ export class HomeComponent implements OnInit {
   //Agregar abono, es una funcion similar a Editar
   async agregarAbono() {
     // Verifica conexión a internet primero
+    if (this.isSubmitting) return; // Evitar múltiples ejecuciones
+    this.isSubmitting = true; // Bloquear botón
+
     const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
 
 
     // 1. Calcular el nuevo monto (resta)
@@ -454,7 +526,10 @@ export class HomeComponent implements OnInit {
       montoPagoParseado,
       abonoAnterior
     ).subscribe({
-      next: (respuesta: any) => {
+      next: async (respuesta: any) => {
+
+        await loading.dismiss();
+        this.isSubmitting = false;
         if (respuesta?.detail === 'El fiado fue eliminado correctamente porque la deuda fue saldada.') {
           this.utilsSvc.presentToast({
             message: this.translateService.instant('El fiado fue eliminado porque ya no hay deuda'),
@@ -488,6 +563,7 @@ export class HomeComponent implements OnInit {
         });
 
         loading.dismiss();
+        this.isSubmitting = false;
       }
     });
   }

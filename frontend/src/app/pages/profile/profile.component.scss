@@ -1,0 +1,12 @@
+.clickable-note {
+  cursor: pointer; /* 👈 Esto cambia el cursor a mano */
+  transition: all 0.3s ease; /* Efecto suave al hover */
+  
+  &:hover {
+    text-decoration: underline; /* Subrayado al pasar mouse */
+  }
+  
+  &:active {
+    transform: scale(0.98); /* Efecto de click */
+  }
+}

@@ -22,4 +22,73 @@
       </svg>
     </button>
   </div>
+  
+  <button (click)="cambiarEmail()" [disabled]="isSubmittingEmail"
+    class="rounded-md bg-color-azul hover:bg-color-azul-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition w-full max-w-xs">
+    <span *ngIf="!isSubmittingEmail">
+      {{ "Cambiar Email" | translate }}
+    </span>
+    <ion-spinner *ngIf="isSubmittingEmail" name="dots"></ion-spinner>
+  </button>
+  <br><br>
+  <button (click)="cambiarContrasena()" [disabled]="isSubmitting"
+    class="rounded-md bg-color-azul hover:bg-color-azul-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition w-full max-w-xs">
+    <span *ngIf="!isSubmitting">
+      {{ "Cambiar Contraseña" | translate }}
+    </span>
+    <ion-spinner *ngIf="isSubmitting" name="dots"></ion-spinner>
+  </button>
+  <br><br>
+  <button (click)="openModalEliminarCuenta()"
+    class="rounded-md bg-color-azul hover:bg-color-azul-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition w-full max-w-xs">
+    {{ "Eliminar cuenta" | translate }}
+  </button>
+  <br><br>
+  <a href="profile"
+    class="rounded-md bg-color-azul hover:bg-color-azul-100 px-3 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium text-black transition w-full max-w-xs block text-center no-underline">
+    {{ "Mi perfil" | translate }}
+  </a>
+
+  <!--Modal de eliminar cuenta -->
+  <div *ngIf="showModalEliminarCuenta" class="fixed inset-0 py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
+    <div class="formularios w-full max-h-[90vh] overflow-y-auto">
+      <h1 class="rounded-xl left-0 w-full py-4 z-[100]
+            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+            dark:bg-[#2d3748] dark:bg-none
+            transition-colors duration-300 text-black dark:text-white">
+        {{"Cuenta eliminar" | translate}}
+      </h1>
+      <ion-row class="ion-padding-bottom">
+        <ion-col size="12">
+          <ion-row>
+            <ion-col size="6">
+              <ion-button (click)="eliminarCuenta()" color="danger" class="gradient-btn" mode="ios" type="button"
+                [disabled]="deletingAccount">
+
+                <span *ngIf="!deletingAccount">
+                  {{ "Borrar" | translate }}
+                </span>
+
+                <span *ngIf="deletingAccount">
+                  <ion-spinner name="crescent" class="mr-2"></ion-spinner>
+                  {{ "Eliminando..." | translate }}
+                </span>
+
+              </ion-button>
+            </ion-col>
+
+            <ion-col size="6">
+              <ion-button (click)="closeModalEliminarCuenta()" class="gradient-btn" mode="ios" color="medium"
+                type="button" [disabled]="deletingAccount">
+                {{ "Cancelar" | translate }}
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+    </div>
+  </div>
+
 </ion-list>

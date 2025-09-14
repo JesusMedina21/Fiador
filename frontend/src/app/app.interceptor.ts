@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
 
 // Usa los mismos valores que en tu servicio
 const API_SECRET_HEADER = 'X-Api-Secret';
-const API_SECRET_VALUE = 'eb174615d2782bb216ae760d9df22bd559c17d97c4891a93907ea0f25ea535c5';
+const API_SECRET_VALUE = 'tucodigo';
 
 @Injectable()
 export class AppInterceptor implements HttpInterceptor {

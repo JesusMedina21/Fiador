@@ -19,6 +19,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AppInterceptor } from './app.interceptor';
+import { DeepLinkService } from './services/deep-link.service';
 
 //Codigo para que funcione correctamente la traducion
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -52,7 +53,8 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     //El interceptor AppInterceptor es creado manualmente por mi para que solamente
     //La api sea consumida por el Frontend y no por ninguna herramienta parecida a Postman
-    { provide: HTTP_INTERCEPTORS, useClass: AppInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AppInterceptor, multi: true },
+    DeepLinkService,
   ],
   bootstrap: [AppComponent],
 })

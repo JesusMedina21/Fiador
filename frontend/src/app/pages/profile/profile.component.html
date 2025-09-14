@@ -1,0 +1,95 @@
+<ion-content [scrollY]="true" [fullscreen]="true">
+
+  <ion-col size="6">
+    <a href="" class="absolute top-24 left-5 z-[1] flex items-center justify-center w-12 h-12 
+          rounded-full bg-color-primary hover:bg-color-primary-100 transition-colors">
+      <ion-icon style="width: 30px; height: 40px;" name="arrow-back-outline"></ion-icon>
+    </a>
+  </ion-col>
+
+
+  <div class="min-h-screen flex flex-col justify-center items-center pb-20">
+
+    <form class="formularios" [formGroup]="profileForm">
+      <!--El keypress es para que cuando el usuario presione la tecla enter inicie sesion-->
+
+      <div class="flex justify-center">
+        <img width="120px" src="assets/logo.webp" alt="">
+      </div>
+
+      <h1
+        class="text-center block text-2xl font-bold text-gray-950 sm:text-3xl lg:text-3xl lg:leading-tight dark:text-white">
+        {{ "Mi perfil" | translate }}
+      </h1>
+
+      <div class="input-formularios">
+        <ion-label>{{ "Correo Principal" | translate }}</ion-label>
+        <div class="input">
+          <ion-input [value]="primaryEmail" [readonly]="true" type="email"
+            class="focus:outline-none focus:ring-0 readonly-input">
+          </ion-input>
+        </div>
+        <ion-note class="text-sm clickable-note text-black dark:text-white" (click)="cambiarEmail()">
+          {{ "Haz click aqui si quieres modificar tu correo" | translate }}
+        </ion-note>
+      </div>
+
+      <!--Campo usuario-->
+      <div class="input-formularios">
+        <ion-label>{{ "Usuario" | translate }}</ion-label>
+        <!--input-->
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="username" type="text"
+            placeholder="{{ 'Placeholder Usuario' | translate }}">
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para el usuario -->
+        <ion-text color="danger" *ngIf="profileForm.get('username')?.invalid && profileForm.get('username')?.touched">
+          <p *ngIf="profileForm.get('username')?.errors?.['required']">
+            {{ "Usuario obligatorio" | translate }}
+          </p>
+          <p *ngIf="profileForm.get('username')?.errors?.['minlength']">
+            {{ "Usuario invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+
+      <div class="input-formularios">
+        <ion-label>{{ "Correo Recuperacion" | translate }}</ion-label>
+        <!--input-->
+        <div class="input">
+          <ion-input class="focus:outline-none focus:ring-0" formControlName="recovery_email" type="email"
+            autocomplete="email" placeholder="{{ 'Placeholder Correo' | translate }}">
+          </ion-input>
+        </div>
+        <!-- Mensajes de error para Email -->
+        <ion-text color="danger"
+          *ngIf="profileForm.get('recovery_email')?.invalid && profileForm.get('recovery_email')?.touched">
+          <p *ngIf="profileForm.get('recovery_email')?.errors?.['required']">
+            {{ "Correo Recovery obligatorio" | translate }}
+          </p>
+          <p *ngIf="profileForm.get('recovery_email')?.errors?.['email']">
+            {{ "Correo Recovery invalido" | translate }}
+          </p>
+        </ion-text>
+      </div>
+      <ion-row class="ion-padding-botton mt-6">
+
+        <ion-col size="12">
+          <ion-button (click)="onSubmit()" [disabled]="profileForm.invalid || isSubmitting" expand="block"
+            class="gradient-btn" mode="ios" type="submit">
+            {{ "Actualizar Perfil" | translate }}
+            <ion-icon slot="end" name="log-in-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+
+      </ion-row>
+    </form>
+
+
+
+  </div>
+
+  <br><br><br>
+
+</ion-content>

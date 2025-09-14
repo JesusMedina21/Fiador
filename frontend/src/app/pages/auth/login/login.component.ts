@@ -43,6 +43,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     password: new FormControl('', [Validators.required, Validators.minLength(8)]),
   })
 
+  isSubmitting: boolean = false;
   isMobile: boolean;
 
   constructor(
@@ -78,12 +79,26 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+  googleLogin() {
+    this.authService.googleLogin();
+  }
+  googleLoginMovil() {
+    this.authService.googleLoginMovil();
+  }
 
   async iniciar_sesion_web() {
+    if (this.isSubmitting) return; // Evitar múltiples ejecuciones
+    this.isSubmitting = true; // Bloquear botón
+
     const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
     if (this.formulario_login.valid) {
       const loading = await this.utilsSvc.loading({
+        message: this.translateService.instant('Cargando...'),
         spinner: 'crescent',
         cssClass: 'custom-loading'
       });
@@ -104,11 +119,14 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.authService.getUserDetails().subscribe({
               next: async (user) => {
                 localStorage.setItem('userId', user.id.toString()); // Almacenar el id del usuario
+                const username = user.username || user.email.split('@')[0];
+
                 //El loading se coloca en este lugar para indicar que aqui se cerrara cuando se complete todo el proceso
                 await loading.dismiss();
+                this.isSubmitting = false;
 
                 await this.utilsSvc.presentToast({
-                  message: this.translateService.instant('Felicitaciones login'),
+                  message: this.translateService.instant('Felicitaciones login', { username: username }),
                   duration: 2000,
                   color: 'success',
                   position: 'middle',
@@ -117,7 +135,9 @@ export class LoginComponent implements OnInit, OnDestroy {
                 this.router.navigate(['/']);
               },
               error: async (err) => {
+                await loading.dismiss();
                 //console.error('Error al obtener detalles del usuario:', err);
+                this.isSubmitting = false;
                 await this.utilsSvc.presentToast({
                   message: this.translateService.instant('Error al obtener detalles del usuario'),
                   duration: 2500,
@@ -128,6 +148,8 @@ export class LoginComponent implements OnInit, OnDestroy {
               }
             });
           } else {
+            await loading.dismiss();
+            this.isSubmitting = false;
             await this.utilsSvc.presentToast({
               message: this.translateService.instant('Error login'),
               duration: 2000,
@@ -139,24 +161,40 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
         error: async (err) => {
           await loading.dismiss();
-          //console.error('Error en el inicio de sesión:', err);
+          this.isSubmitting = false;
+
+          let message = this.translateService.instant('Login incorrecto'); // Mensaje por defecto
+
+          // ✅ Si es 401, significa que no confirmó su email
+          if (err.status === 401) {
+            message = this.translateService.instant('No ha confirmado su email');
+          } else if (err.status === 400) {
+            message = this.translateService.instant('Login incorrecto');
+          }
+
           await this.utilsSvc.presentToast({
-            message: this.translateService.instant('Login incorrecto'),
-            duration: 2500,
+            message,
+            duration: 3000,
             color: 'danger',
             position: 'middle',
             icon: 'alert-circle-outline'
           });
         }
+
       });
     }
   }
 
 
   async iniciar_sesion_huella() {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
 
     const hasConnection = await this.networkService.checkConnection();
-    if (!hasConnection) return;
+    if (!hasConnection) {
+      this.isSubmitting = false;
+      return;
+    }
     if (this.formulario_login.valid) {
 
       const loading = await this.utilsSvc.loading({
@@ -217,6 +255,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                     await this.errorHuella(error);
                   } finally {
                     innerLoading.dismiss();
+                    this.isSubmitting = false;
                   }
                 }
               },
@@ -238,6 +277,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                     await this.errorHuella(error);
                   } finally {
                     innerLoading.dismiss();
+                    this.isSubmitting = false;
                   }
                 }
               }
@@ -263,10 +303,12 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       } finally {
         loading.dismiss(); // Oculta el loading pase lo que pase
+        this.isSubmitting = false;
       }
 
 
     } else {
+      this.isSubmitting = false;
       this.utilsSvc.presentToast({
         message: this.translateService.instant('Completa_Campos_Login_Huella'),
         duration: 2000,
@@ -279,25 +321,29 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   //Este codigo es en caso de que el usuario dijo que no queria registrar la huella para logearse
+  //Este codigo es en caso de que el usuario dijo que no queria registrar la huella para logearse
   async hacerLoginSinHuella(formValue: User) {
     try {
       const loginResponse = await this.authService.login(formValue).toPromise();
       if (loginResponse && loginResponse.access) {
         localStorage.setItem('token', loginResponse.access);
 
-        // Obtener datos del usuario para almacenar el userId
+        // Obtener datos del usuario para almacenar el userId y el nombre
         const userDetails = await this.authService.getUserDetails().toPromise();
         if (userDetails) {
           localStorage.setItem('userId', userDetails.id.toString()); // Almacenar el id del usuario
-        }
 
-        await this.utilsSvc.presentToast({
-          message: this.translateService.instant('Felicitaciones login'),
-          duration: 2000,
-          color: 'success',
-          position: 'middle',
-          icon: 'checkmark-circle-outline'
-        });
+          // Obtener el nombre de usuario para el mensaje personalizado
+          const username = userDetails.username || userDetails.email.split('@')[0];
+
+          await this.utilsSvc.presentToast({
+            message: this.translateService.instant('Felicitaciones login', { username: username }),
+            duration: 2000,
+            color: 'success',
+            position: 'middle',
+            icon: 'checkmark-circle-outline'
+          });
+        }
 
         this.router.navigateByUrl('/');
       }
@@ -522,7 +568,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     // Mensajes más específicos según el tipo de error
     if (error?.status === 401) {
-      message = this.translateService.instant('ERROR_AUTENTICACION');
+      message = this.translateService.instant('No ha confirmado su email');
     } else if (error?.status === 404) {
       message = this.translateService.instant('USUARIO_NO_ENCONTRADO');
     } else if (error?.message?.includes('Failed to update biometric data')) {
@@ -581,9 +627,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     try {
       await loading.present();
 
-
-      //const verified = true; //prueba en el navegador
-
       // 1. Primero verificar la huella
       const verified = await this.performBiometricVerificatin();
       if (!verified) {
@@ -605,25 +648,27 @@ export class LoginComponent implements OnInit, OnDestroy {
       // 4. Login exitoso
       localStorage.setItem('token', loginResponse.access);
 
-      // Obtener datos del usuario para almacenar el userId
+      // Obtener datos del usuario para almacenar el userId y mostrar mensaje personalizado
       const userDetails = await this.authService.getUserDetails().toPromise();
       if (userDetails) {
         localStorage.setItem('userId', userDetails.id.toString()); // Almacenar el id del usuario
-      }
 
-      await this.utilsSvc.presentToast({
-        message: this.translateService.instant('Felicitaciones login'),
-        duration: 2000,
-        color: 'success',
-        position: 'middle',
-        icon: 'checkmark-circle-outline'
-      });
+        // Obtener el nombre de usuario para el mensaje personalizado
+        const username = userDetails.username || userDetails.email.split('@')[0];
+
+        await this.utilsSvc.presentToast({
+          message: this.translateService.instant('Felicitaciones login', { username: username }),
+          duration: 2000,
+          color: 'success',
+          position: 'middle',
+          icon: 'checkmark-circle-outline'
+        });
+      }
 
       this.router.navigateByUrl('/');
 
     } catch (error) {
       await this.errorHuella(error);
-
     } finally {
       await loading.dismiss();
     }

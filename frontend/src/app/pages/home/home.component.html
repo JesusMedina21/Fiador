@@ -5,7 +5,7 @@
   <h1 class="loading-text text-black dark:text-white">{{ "Cargando Fiador" | translate }}</h1>
 </div>
 
-<ion-content *ngIf="isLoggedIn !== null && !isLoadingFiador">
+<ion-content *ngIf="isLoggedIn !== null && !isLoadingFiador" [scrollY]="true" [fullscreen]="true">
 
   <header *ngIf="isLoggedIn && !isMobile">
     <br>
@@ -41,7 +41,7 @@
   </header>
 
   <header *ngIf="isLoggedIn && isMobile">
-    <br><br><br>
+    <br><br>
     <div class="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
       <div class="flex items-center justify-between w-full">
@@ -76,8 +76,8 @@
   <div *ngIf="!isLoggedIn" class="min-h-screen flex items-center justify-center p-4">
     <div class="flex flex-col md:grid md:grid-cols-2 gap-4 md:gap-8 xl:gap-20 md:items-center">
 
-      <div class="md:hidden relative order-first" *ngIf="isLoggedIn && isMobile">
-        <!--Este es el h1 del celular-->
+      <div class="md:hidden relative order-first" *ngIf="!isLoggedIn && isMobile">
+        <!--Este es el h1 de la web-->
         <h1
           class="text-center block text-2xl font-bold text-gray-950 sm:text-3xl lg:text-5xl lg:leading-tight dark:text-white">
           {{ "Bienvenida" | translate }}
@@ -85,8 +85,8 @@
         </h1>
       </div>
 
-      <div class="md:hidden relative order-first" *ngIf="isLoggedIn && !isMobile">
-        <br><br>
+      <div class="md:hidden relative order-first" *ngIf="!isLoggedIn && !isMobile">
+        <br><br><br>
         <!--Este es el h1 del celular-->
         <h1
           class="text-center block text-2xl font-bold text-gray-950 sm:text-3xl lg:text-5xl lg:leading-tight dark:text-white">
@@ -202,25 +202,34 @@
                   style="--padding-start: 0; --padding-end: 0; --padding-top: 0; --padding-bottom: 0;">
                   <ion-icon name="eye"
                     class="text-black dark:text-gray-400 hover:text-blue-500 transition-colors duration-200"
-                    style="width: 30px; height: 40px;"></ion-icon>
+                    style="width: 30px; height: 40px;">
+                  </ion-icon>
                 </ion-button>
               </span>
             </p>
+            <br>
             <p class="text-base lg:text-xl font-medium dark:text-white">
               <span class="text-black dark:text-gray-500">{{ "Deuda" | translate }}: </span>
               <span class="text-zinc-900 dark:text-gray-200">{{ fiado.deuda_total | currency }}</span>
             </p>
           </div>
-          <ion-button color="tertiary" expand="block" mode="md" (click)="openEditarModal(fiado)"
-            [disabled]="!isOnline || networkChecking" [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
-            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" type="submit">
-            {{"Actualizar" | translate }}
-          </ion-button>
-          <ion-button color="danger" expand="block" mode="md" [disabled]="!isOnline || networkChecking"
-            [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
-            class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEliminar(fiado)">
-            <p class="text-white">{{"Borrar" | translate }}</p>
-          </ion-button>
+          <div class="flex flex-col space-y-2">
+            <ion-button color="tertiary" expand="block" mode="md" (click)="openEditarModal(fiado)"
+              [disabled]="(!isOnline && !networkChecking) || networkChecking"
+              [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+              class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" type="submit">
+
+              <ion-spinner *ngIf="networkChecking" name="crescent"></ion-spinner>
+              <span *ngIf="!networkChecking">{{"Actualizar" | translate }}</span>
+            </ion-button>
+            <ion-button color="danger" expand="block" mode="md"
+              [disabled]="(!isOnline && !networkChecking) || networkChecking"
+              [title]="!isOnline ? ('ERROR_CONEXION_INTERNET' | translate) : ''"
+              class="submit text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2" (click)="abrirModalEliminar(fiado)">
+              <ion-spinner *ngIf="networkChecking" name="crescent"></ion-spinner>
+              <span *ngIf="!networkChecking" class="text-white">{{"Borrar" | translate }}</span>
+            </ion-button>
+          </div>
         </div>
       </li>
 
@@ -236,7 +245,7 @@
       <div *ngIf="Fiador.length === 0 && !busquedaFiado" class="text-center py-4">
         <h1 class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r bg-color-primary
       dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
-          
+
           {{ !isOnline ? ('ERROR_CONEXION_INTERNET_RECARGA' | translate) : ('Fiado no hay' | translate) }}
         </h1>
       </div>
@@ -248,7 +257,7 @@
     bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
      dark:bg-[#12171f]
        dark:bg-none flex justify-center items-center">
-      <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_fiado"
+      <form class="formularios w-full max-h-[90vh] overflow-y-auto pb-20" [formGroup]="formulario_fiado"
         (ngSubmit)="registrar_fiado()">
         <h1
           class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd] dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
@@ -346,8 +355,9 @@
             <!-- Monto Total -->
             <ion-item>
               <ion-label><strong>{{ "Total" | translate }}</strong></ion-label>
-              <ion-text slot="end" class="text-black dark:text-white"><strong>{{ calcularMontoTotal() |
-                  currency}}</strong></ion-text>
+              <ion-text slot="end" class="text-black dark:text-white">
+                <strong>{{ calcularMontoTotal() | currency}}</strong>
+              </ion-text>
             </ion-item>
           </div>
 
@@ -355,9 +365,10 @@
         </div>
 
         <!-- Botones -->
-        <ion-row class="ion-padding-bottom" *ngIf="clientes.length > 0 && productos.length > 0">
+        <ion-row class="ion-padding-bottom mt-6" *ngIf="clientes.length > 0 && productos.length > 0">
           <ion-col size="6">
-            <ion-button [disabled]="!validarFormulario()" expand="block" class="gradient-btn" mode="ios" type="submit">
+            <ion-button [disabled]="!validarFormulario() || isSubmitting" expand="block" class="gradient-btn" mode="ios"
+              type="submit">
               {{ "Registrar Fiado" | translate }}
             </ion-button>
           </ion-col>
@@ -367,7 +378,7 @@
             </ion-button>
           </ion-col>
         </ion-row>
-        <ion-row class="ion-padding-bottom" *ngIf="clientes.length === 0 && productos.length === 0">
+        <ion-row class="ion-padding-bottom mt-6" *ngIf="clientes.length === 0 && productos.length === 0">
           <ion-col size="12">
             <ion-button (click)="closeModalFiado()" class="gradient-btn" color="medium" mode="ios" type="button">
               {{ "Cerrar" | translate }}
@@ -415,7 +426,7 @@
     <div *ngIf="showModalEditar" class="fixed inset-0 py-4 z-[100]
             bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
             dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
-      <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_fiado">
+      <form class="formularios w-full max-h-[90vh] overflow-y-auto pb-20" [formGroup]="formulario_fiado">
         <h1 class="rounded-xl left-0 w-full py-4 z-[100]
             bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
             dark:bg-[#2d3748] dark:bg-none
@@ -463,7 +474,7 @@
 
       <!-- Modal de input para monto -->
       <div *ngIf="mostrarInputPago"
-        class="fixed inset-0 z-[200] bg-black bg-opacity-50 flex justify-center items-center">
+        class="fixed inset-0 z-[200] bg-black bg-opacity-50 flex justify-center items-center pb-20">
         <div class="
             bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
             dark:bg-[#12171f] dark:bg-none justify-center items-center rounded-lg w-80">
@@ -485,11 +496,11 @@
           </div>
 
           <div class="flex justify-between mt-4">
+            <ion-button (click)="agregarAbono() || isSubmitting" mode="ios" [disabled]="!montoPagoValido">
+              {{ "Confirmar" | translate }}
+            </ion-button>
             <ion-button (click)="cancelarPago()" color="medium" mode="ios">
               {{ "Cancelar" | translate }}
-            </ion-button>
-            <ion-button (click)="agregarAbono()" mode="ios" [disabled]="!montoPagoValido">
-              {{ "Confirmar" | translate }}
             </ion-button>
           </div>
         </div>
@@ -501,13 +512,13 @@
 
     <!-- Modal de visualizar Fiador -->
     <div *ngIf="showVisualizarFiadoModal" class="fixed inset-0 py-4 z-[100]
-            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
-            dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
+        bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+        dark:bg-[#12171f] dark:bg-none flex justify-center items-center">
       <div class="formularios w-full max-h-[90vh] overflow-y-auto">
         <h1 class="rounded-xl left-0 w-full py-4 z-[100]
-            bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
-            dark:bg-[#2d3748] dark:bg-none
-            transition-colors duration-300 text-black dark:text-white">
+        bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
+        dark:bg-[#2d3748] dark:bg-none
+        transition-colors duration-300 text-black dark:text-white">
           {{"Fiado Datos" | translate}}
         </h1>
 
@@ -518,30 +529,38 @@
           </ion-label>
 
           <br><br>
-          <ul *ngIf="Fiadoreleccionado">
-            <li *ngFor="let deuda of Fiadoreleccionado.deuda_pendiente">
+
+          <div *ngFor="let deuda of Fiadoreleccionado?.deuda_pendiente">
+            <ion-label>
+              <span class="text-black dark:text-gray-500">{{ "Fecha" | translate }}: </span>
+              <span class="text-zinc-900 dark:text-gray-200">{{ deuda.fecha_registro | dateFormat }}</span>
+            </ion-label>
+  
+            <li *ngFor="let item of deuda.items">
+              <br>
               <ion-label>
                 <span class="text-black dark:text-gray-500">{{ "Producto" | translate }}: </span>
-                <span class="text-zinc-900 dark:text-gray-200">{{ deuda.producto_nombre }}</span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ item.producto_nombre }}</span>
               </ion-label>
               <br>
               <ion-label>
                 <span class="text-black dark:text-gray-500">{{ "Precio" | translate }}: </span>
-                <span class="text-zinc-900 dark:text-gray-200">{{ deuda.precio | currency }}</span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ item.precio | currency }}</span>
               </ion-label>
               <br>
               <ion-label>
                 <span class="text-black dark:text-gray-500">{{ "Cantidad" | translate }}: </span>
-                <span class="text-zinc-900 dark:text-gray-200">{{ deuda.cantidad }}</span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ item.cantidad }}</span>
               </ion-label>
               <br>
               <ion-label>
                 <span class="text-black dark:text-gray-500">{{ "Subtotal" | translate }}: </span>
-                <span class="text-zinc-900 dark:text-gray-200">{{ (deuda.precio * deuda.cantidad) | currency }}</span>
+                <span class="text-zinc-900 dark:text-gray-200">{{ (item.precio * item.cantidad) | currency }}</span>
               </ion-label>
               <br><br>
             </li>
-          </ul>
+
+          </div>
 
           <ion-label>
             <span class="text-black dark:text-gray-500">{{ "Comision" | translate }}: </span>
@@ -580,7 +599,7 @@
     bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd]
      dark:bg-[#12171f]
        dark:bg-none flex justify-center items-center">
-      <form class="formularios w-full max-h-[90vh] overflow-y-auto" [formGroup]="formulario_fiado"
+      <form class="formularios w-full max-h-[90vh] overflow-y-auto pb-20" [formGroup]="formulario_fiado"
         (ngSubmit)="registrar_fiado()">
         <h1
           class="rounded-xl left-0 w-full py-4 z-[100] bg-gradient-to-r from-[#1d335d] via-[#5875ad] to-[#7a95cd] dark:bg-[#2d3748] dark:bg-none transition-colors duration-300 text-black dark:text-white">
@@ -662,9 +681,10 @@
         </div>
 
         <!-- Botones -->
-        <ion-row class="ion-padding-bottom" *ngIf="clientes.length > 0 && productos.length > 0">
+        <ion-row class="ion-padding-bottom mt-6" *ngIf="clientes.length > 0 && productos.length > 0">
           <ion-col size="6">
-            <ion-button [disabled]="!validarFormulario()" expand="block" class="gradient-btn" mode="ios" type="submit">
+            <ion-button [disabled]="!validarFormulario() || isSubmitting" expand="block" class="gradient-btn" mode="ios"
+              type="submit">
               {{ "Registrar Fiado" | translate }}
             </ion-button>
           </ion-col>
@@ -674,7 +694,7 @@
             </ion-button>
           </ion-col>
         </ion-row>
-        <ion-row class="ion-padding-bottom" *ngIf="clientes.length === 0 && productos.length === 0">
+        <ion-row class="ion-padding-bottom mt-6" *ngIf="clientes.length === 0 && productos.length === 0">
           <ion-col size="12">
             <ion-button (click)="closeModalOtroFiado()" class="gradient-btn" color="medium" mode="ios" type="button">
               {{ "Cerrar" | translate }}

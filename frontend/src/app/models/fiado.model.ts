@@ -8,6 +8,11 @@ export interface DetalleFiadoProducto {
     cantidad: number;
 }
 
+export interface DeudaPendiente {
+    fecha_registro: string;
+    items: DetalleFiadoProducto[];
+}
+
 export interface Fiado {
     id: number,
     cliente: Cliente;
@@ -19,6 +24,6 @@ export interface Fiado {
     interes: number,
     fecha_registro: string,
     productos?: DetalleFiadoProducto[];
-    deuda_pendiente?: DetalleFiadoProducto[];
+    deuda_pendiente?: DeudaPendiente[]; // Cambiado a array de DeudaPendiente
 }
 

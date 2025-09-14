@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.Fiador.com',
+  appId: 'com.fiador.com',
   appName: 'Fiador App',
   webDir: 'www',
 
@@ -13,13 +13,13 @@ const config: CapacitorConfig = {
       launchShowDuration: 0,
       launchAutoHide: true,
       //launchFadeOutDuration: 3000,
-      backgroundColor: "#1e7cee",
+      backgroundColor: "#5875ad",
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",
-      showSpinner: false,
+      showSpinner: true,
       androidSpinnerStyle: "large",
       iosSpinnerStyle: "small",
-      spinnerColor: "#999999",
+      spinnerColor: "#ffffff",
       splashFullScreen: false,
       splashImmersive: false,
       layoutName: "launch_screen",

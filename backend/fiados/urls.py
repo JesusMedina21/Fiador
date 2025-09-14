@@ -53,7 +53,6 @@ urlpatterns = [
     #MI CODIGO
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
-    
     re_path(r'^(?!api/docs/).*$', RedirectView.as_view(url='/admin/', permanent=False)),
     re_path('api/', RedirectView.as_view(url='/api/docs/', permanent=False)),
 

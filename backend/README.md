@@ -1,6 +1,6 @@
 # Guía de instalación del proyecto Django
 
-## ¿De que se trata este proyecto/API REST?
+## ¿De que se trata este proyecto/API?
 
 Este proyecto se trata de una API REST que es utilizada como Backend para la plataforma Fiador, permitiendo Registrar, Modificar, Eliminar y Listar los Productos, Fiados y Clientes de la plataforma. A traves de los metodos GET, POST, PUT y DELETE.
 
@@ -11,8 +11,8 @@ Este proyecto se trata de una API REST que es utilizada como Backend para la pla
 
 ## Antes de comenzar
 
-Antes de comenzar a instalar las librerias y dependencias del proyecto es necesario verificar que tienes Python instalado.
-Abre la terminal de comandos de tu sistema y escribe el siguiente comando para asegurarte de que todo está correcto antes de comenzar.
+Antes de comenzar a instalar las dependencias del proyecto es necesario verificar que tienes las dependencias necesarias instaladas.
+Abre la terminal de comandos de tu sistema y sigue los siguientes pasos para asegurarte de que todo está correcto antes de comenzar.
 
 ### Verificar instalación de Python
 
@@ -40,15 +40,6 @@ py -m venv venv
 pip install -r requirements.txt
 ```
 
-```
-python manage.py makemigrations 
-```
-
-```
-python3 manage.py migrate 
-```
-
-
 ## Si estas en una Distribucion Linux basada en Debian (Ubuntu, Linux Mint etc...)
 
 ```
@@ -63,20 +54,11 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-```
-python3 manage.py makemigrations 
-```
-
-```
-python3 manage.py migrate 
-```
-
 ## Levantar el backend de la plataforma
 
 El backend de la plataforma está construido en Django, para ejecutar el servidor de desarrollo backend debes ejecutar el siguiente comando:
 
 ## Si estas en Windows
-
 
 ```
 
